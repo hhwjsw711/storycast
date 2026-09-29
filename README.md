@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="web/public/logo.svg" width="72" alt="Storycast" />
+  <img src="web/public/logo.svg" width="72" alt="Memegineer" />
 </p>
 
-<h1 align="center">Storycast</h1>
+<h1 align="center">Memegineer</h1>
 
 <p align="center">
   <b>Type a topic. Get a story.</b><br />
@@ -10,12 +10,12 @@
 </p>
 
 <p align="center">
-  <a href="https://storycast-fawn.vercel.app"><b>Open Storycast</b></a> ·
+  <a href="https://memegineer.com"><b>Open Memegineer</b></a> ·
   <a href=".github/assets/launch.mp4">Watch the launch video</a>
 </p>
 
 <p align="center">
-  <a href="https://storycast-fawn.vercel.app"><img src=".github/assets/home.jpg" alt="Storycast home" /></a>
+  <a href="https://memegineer.com"><img src=".github/assets/home.jpg" alt="Memegineer home" /></a>
 </p>
 
 ## What it makes
@@ -26,14 +26,14 @@ a score, a hand-lettered end card and word-by-word subtitles. 50 ready narrators
 
 <table>
   <tr>
-    <td width="33%"><a href="https://storycast-fawn.vercel.app/films/10a4f1dd"><img src="web/public/static/posters/10a4f1dd.jpg" alt="Nib and the stick inside the pencil" /></a><br /><sub><b>Nib</b> and the stick inside the pencil · Claymation</sub></td>
-    <td width="33%"><a href="https://storycast-fawn.vercel.app/films/18d77a9d"><img src="web/public/static/posters/18d77a9d.jpg" alt="Kiko and the secret life of lightning" /></a><br /><sub><b>Kiko</b> and the secret life of lightning · Watercolor anime</sub></td>
-    <td width="33%"><a href="https://storycast-fawn.vercel.app/films/2bf0760f"><img src="web/public/static/posters/2bf0760f.jpg" alt="Stella and the very first newspapers" /></a><br /><sub><b>Stella</b> and the very first newspapers · Comic ligne claire</sub></td>
+    <td width="33%"><a href="https://memegineer.com/films/10a4f1dd"><img src="web/public/static/posters/10a4f1dd.jpg" alt="Nib and the stick inside the pencil" /></a><br /><sub><b>Nib</b> and the stick inside the pencil · Claymation</sub></td>
+    <td width="33%"><a href="https://memegineer.com/films/18d77a9d"><img src="web/public/static/posters/18d77a9d.jpg" alt="Kiko and the secret life of lightning" /></a><br /><sub><b>Kiko</b> and the secret life of lightning · Watercolor anime</sub></td>
+    <td width="33%"><a href="https://memegineer.com/films/2bf0760f"><img src="web/public/static/posters/2bf0760f.jpg" alt="Stella and the very first newspapers" /></a><br /><sub><b>Stella</b> and the very first newspapers · Comic ligne claire</sub></td>
   </tr>
   <tr>
-    <td width="33%"><a href="https://storycast-fawn.vercel.app/films/0067bf73"><img src="web/public/static/posters/0067bf73.jpg" alt="Rex and the bone that turned to stone" /></a><br /><sub><b>Rex</b> and the bone that turned to stone · Kid's crayon</sub></td>
-    <td width="33%"><a href="https://storycast-fawn.vercel.app/films/19def244"><img src="web/public/static/posters/19def244.jpg" alt="Rio y el tango del puerto" /></a><br /><sub><b>Rio</b> y el tango del puerto · Marker sketch · Español</sub></td>
-    <td width="33%"><a href="https://storycast-fawn.vercel.app/films/1b1d5e2e"><img src="web/public/static/posters/1b1d5e2e.jpg" alt="Wren ve yerin altındaki gizli şehirler" /></a><br /><sub><b>Wren</b> ve yerin altındaki gizli şehirler · Gouache storybook · Türkçe</sub></td>
+    <td width="33%"><a href="https://memegineer.com/films/0067bf73"><img src="web/public/static/posters/0067bf73.jpg" alt="Rex and the bone that turned to stone" /></a><br /><sub><b>Rex</b> and the bone that turned to stone · Kid's crayon</sub></td>
+    <td width="33%"><a href="https://memegineer.com/films/19def244"><img src="web/public/static/posters/19def244.jpg" alt="Rio y el tango del puerto" /></a><br /><sub><b>Rio</b> y el tango del puerto · Marker sketch · Español</sub></td>
+    <td width="33%"><a href="https://memegineer.com/films/1b1d5e2e"><img src="web/public/static/posters/1b1d5e2e.jpg" alt="Wren ve yerin altındaki gizli şehirler" /></a><br /><sub><b>Wren</b> ve yerin altındaki gizli şehirler · Gouache storybook · Türkçe</sub></td>
   </tr>
 </table>
 

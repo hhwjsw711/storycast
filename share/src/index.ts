@@ -388,7 +388,7 @@ async function share(req: Request, env: Env) {
   const t = now();
   const wantsLink = body?.visibility !== "public";
   const q = await quota(env, ip);
-  if (q.busy) throw new HttpError(429, "Storycast has had a lot of shares today, please try again tomorrow", { code: "busy" });
+  if (q.busy) throw new HttpError(429, "Memegineer has had a lot of shares today, please try again tomorrow", { code: "busy" });
   if (wantsLink && q.links_left <= 0) throw linkLimit(q);
   if (!wantsLink && q.explore_left <= 0) throw new HttpError(429, "you have sent a lot of stories to Explore today", { code: "explore_limit" });
 
@@ -431,7 +431,7 @@ async function share(req: Request, env: Env) {
   }
   if (verdict.allowed !== null && verdict.allowed < REFUSE_BELOW) {
     await removeFilm(env, id).catch(() => {});
-    throw new HttpError(422, "This story can't be shared on Storycast: it did not pass the safety check.", { code: "refused", reason: verdict.category });
+    throw new HttpError(422, "This story can't be shared on Memegineer: it did not pass the safety check.", { code: "refused", reason: verdict.category });
   }
 
   const review = verdict.allowed === null || verdict.allowed < REVIEW_BELOW;
@@ -673,7 +673,7 @@ async function route(req: Request, env: Env, ctx: ExecutionContext): Promise<Res
     }
   }
 
-  if (path === "/" && m === "GET") return new Response("Storycast sharing API", { headers: { "content-type": "text/plain" } });
+  if (path === "/" && m === "GET") return new Response("Memegineer sharing API", { headers: { "content-type": "text/plain" } });
   throw new HttpError(404, "not found");
 }
 

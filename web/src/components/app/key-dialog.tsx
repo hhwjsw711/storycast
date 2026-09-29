@@ -63,7 +63,7 @@ export function KeyDialog({ open, onClose, onConnected }: { open: boolean; onClo
               <div>
                 <h2 className="text-base font-medium">Connect your fal key</h2>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Storycast makes every film on fal with your own key, so generations are billed to your fal account. A one-minute film
+                  Memegineer makes every film on fal with your own key, so generations are billed to your fal account. A one-minute film
                   costs about {dollars(estimateCost(1).total)}; you see the estimate before every film.
                 </p>
               </div>
@@ -86,7 +86,7 @@ export function KeyDialog({ open, onClose, onConnected }: { open: boolean; onClo
             <div className="flex flex-col gap-2 text-xs text-muted-foreground">
               <p className="flex items-start gap-2">
                 <ShieldCheck className="mt-px size-3.5 shrink-0" />
-                Your key stays in this browser and is sent only to fal. Storycast has no server that sees it.
+                Your key stays in this browser and is sent only to fal. Memegineer has no server that sees it.
               </p>
               <a href="https://fal.ai/dashboard/keys" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 font-medium text-foreground hover:underline">
                 Get a key from your fal dashboard <ExternalLink className="size-3" />

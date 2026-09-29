@@ -137,9 +137,9 @@ export async function agentBrief(ctx: AgentContext | null): Promise<string> {
   const add = (...lines: string[]) => L.push(...lines);
 
   add(
-    "# Make a Storycast film",
+    "# Make a Memegineer film",
     "",
-    "Make a short narrated animated film on fal exactly the way Storycast does it. Follow the steps in order, run independent calls in parallel,",
+    "Make a short narrated animated film on fal exactly the way Memegineer does it. Follow the steps in order, run independent calls in parallel,",
     "keep every URL fal returns, and show the user the script before you spend on video.",
     "",
     "## Setup",

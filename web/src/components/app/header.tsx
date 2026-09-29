@@ -36,9 +36,9 @@ export function Header({ hasKey, onKey, onDisconnect }: KeyProps) {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/70 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-2 px-3 sm:px-6">
-        <Link to="/" aria-label="Storycast" className="flex shrink-0 items-center gap-2.5">
+        <Link to="/" aria-label="Memegineer" className="flex shrink-0 items-center gap-2.5">
           <img src="/logo.svg" alt="" className="size-9" />
-          <span className="hidden text-[17px] font-semibold tracking-tight sm:inline">Storycast</span>
+          <span className="hidden text-[17px] font-semibold tracking-tight sm:inline">Memegineer</span>
         </Link>
         <nav className="flex items-center gap-1">
           <SharedLayoutBg className="w-auto flex-row items-center gap-1" pillClassName="rounded-full bg-muted" inset={0}>

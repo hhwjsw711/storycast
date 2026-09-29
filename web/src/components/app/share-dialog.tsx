@@ -88,7 +88,7 @@ function LimitPanel({ film, q, onExplore }: { film: Film; q: Quota; onExplore: (
       <div className="rounded-2xl bg-muted/60 p-4">
         <p className="text-sm font-medium">You've shared {q.links_per_day} stories by link today</p>
         <p className="mt-1 text-xs text-muted-foreground">
-          To keep Storycast safe from abuse, everyone can share up to {q.links_per_day} stories by link a day, and every shared story is
+          To keep Memegineer safe from abuse, everyone can share up to {q.links_per_day} stories by link a day, and every shared story is
           checked automatically. You can still make as many films as you like.
         </p>
       </div>
@@ -140,7 +140,7 @@ function LimitPanel({ film, q, onExplore }: { film: Film; q: Quota; onExplore: (
           <GithubMark className="size-4" />
         </span>
         <span>
-          <span className="block text-sm font-medium">Run your own Storycast</span>
+          <span className="block text-sm font-medium">Run your own Memegineer</span>
           <span className="block text-xs text-muted-foreground">Fork the project on GitHub and host your own copy, with your own limits.</span>
         </span>
       </a>
@@ -205,7 +205,7 @@ export function ShareDialog({ film, existing, open, onClose, onChange }: { film:
         await loadQuota();
         setLimited(true);
       } else if (e instanceof ShareError && e.code === "refused") {
-        setError("This story can't be shared: it did not pass Storycast's safety check. You can still download it.");
+        setError("This story can't be shared: it did not pass Memegineer's safety check. You can still download it.");
       } else setError(e instanceof Error ? e.message : String(e));
     } finally {
       setBusy(false);
@@ -313,7 +313,7 @@ export function ShareDialog({ film, existing, open, onClose, onChange }: { film:
                     </Button>
                     <p className="-mt-2 flex items-start gap-1.5 text-xs text-muted-foreground">
                       <ShieldCheck className="mt-px size-3.5 shrink-0" />
-                      Every shared story is checked automatically for safety. The film is copied to Storycast so the link keeps working; your
+                      Every shared story is checked automatically for safety. The film is copied to Memegineer so the link keeps working; your
                       fal key is never shared.
                     </p>
                   </>

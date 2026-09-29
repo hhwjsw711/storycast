@@ -1,7 +1,7 @@
 {
   "name": "storycast-share",
   "version": "1.0.0",
-  "description": "Storycast sharing API: Cloudflare Worker + D1 + R2",
+  "description": "Memegineer sharing API: Cloudflare Worker + D1 + R2",
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",

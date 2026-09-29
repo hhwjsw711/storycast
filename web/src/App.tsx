@@ -180,7 +180,7 @@ export default function App() {
           </>
         )}
       </main>
-      <footer className="border-t border-border py-8 text-center text-xs text-muted-foreground">Storycast · every frame, voice and cut is made on fal</footer>
+      <footer className="border-t border-border py-8 text-center text-xs text-muted-foreground">Memegineer · pick a character, type a topic, get a film</footer>
       <KeyDialog
         open={keyOpen}
         onClose={() => setKeyOpen(false)}

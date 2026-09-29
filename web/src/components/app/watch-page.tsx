@@ -123,9 +123,9 @@ export function WatchPage({ id, films, cast, loading }: { id: string; films: Fil
     return () => setAgentContext(null);
   }, [film]);
   useEffect(() => {
-    if (film) document.title = `${film.title} ${film.subtitle} · Storycast`;
+    if (film) document.title = `${film.title} ${film.subtitle} · Memegineer`;
     return () => {
-      document.title = "Storycast";
+      document.title = "Memegineer";
     };
   }, [film]);
 
