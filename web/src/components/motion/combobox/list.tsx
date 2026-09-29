@@ -10,6 +10,7 @@ import {
   useMemo,
   useRef,
 } from "react";
+import { useT } from "@/lib/i18n";
 import { EASE_OUT, SPRING_LAYOUT } from "@/lib/ease";
 import { cn } from "@/lib/utils";
 import { ComboboxGroupContext, useComboboxContext } from "./context";
@@ -22,15 +23,17 @@ export interface ComboboxListProps {
 
 export function ComboboxList({
   children,
-  ariaLabel = "Options",
+  ariaLabel,
   className,
 }: ComboboxListProps) {
+  const t = useT();
   const context = useComboboxContext("ComboboxList");
+  const resolvedAriaLabel = ariaLabel ?? t("motion.options");
   return (
     <div
       id={context.listId}
       role="listbox"
-      aria-label={ariaLabel}
+      aria-label={resolvedAriaLabel}
       className={cn(
         "relative isolate max-h-64 overflow-y-auto overscroll-contain p-1.5 [-ms-overflow-style:none] scrollbar-none [&::-webkit-scrollbar]:hidden",
         className,
@@ -46,6 +49,7 @@ export interface ComboboxGroupProps {
 }
 
 export function ComboboxGroup({ children, className }: ComboboxGroupProps) {
+  const t = useT();
   const context = useComboboxContext("ComboboxGroup");
   const groupId = useId();
   return (
@@ -53,7 +57,7 @@ export function ComboboxGroup({ children, className }: ComboboxGroupProps) {
       <fieldset
         hidden={!context.hasVisibleItems(groupId)}
         className={cn("m-0 min-w-0 border-0 p-0 py-0.5", className)}>
-        {children}
+      {children ?? t("motion.noOptions")}
       </fieldset>
     </ComboboxGroupContext.Provider>
   );
@@ -194,9 +198,10 @@ export interface ComboboxEmptyProps {
 }
 
 export function ComboboxEmpty({
-  children = "No options found.",
+  children,
   className,
 }: ComboboxEmptyProps) {
+  const t = useT();
   const context = useComboboxContext("ComboboxEmpty");
   if (context.visibleCount > 0) return null;
   return (
@@ -206,7 +211,7 @@ export function ComboboxEmpty({
         "px-3 py-8 text-center text-sm text-muted-foreground",
         className,
       )}>
-      {children}
+      {children ?? t("motion.noOptions")}
     </div>
   );
 }

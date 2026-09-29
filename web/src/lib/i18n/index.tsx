@@ -41,7 +41,6 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const setLocale = useCallback((l: Locale) => {
     setLocaleState(l);
     _currentLocale = l;
-    _listeners.forEach((fn) => fn(l));
     try { localStorage.setItem(STORAGE_KEY, l); } catch {}
     document.documentElement.lang = l;
   }, []);
@@ -74,7 +73,6 @@ export function useT() {
 
 // Global translation for non-React modules (pipeline.ts etc.)
 let _currentLocale: Locale = detect();
-const _listeners = new Set<(l: Locale) => void>();
 
 export function getT() {
   return (key: string, params?: Record<string, string | number>) => {
@@ -82,9 +80,4 @@ export function getT() {
     const msg = dict[key] ?? MESSAGES.en[key] ?? key;
     return interpolate(msg, params);
   };
-}
-
-export function onLocaleChange(fn: (l: Locale) => void) {
-  _listeners.add(fn);
-  return () => { _listeners.delete(fn); };
 }

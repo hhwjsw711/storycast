@@ -205,7 +205,6 @@ export const en: Record<string, string> = {
   "job.latestFilm": "Latest film",
   "job.stopped": "Stopped",
   "job.pipeline": "Pipeline",
-  "job.tasksCompleted": "{n} of {n} tasks completed",
   "job.directorWriting": "The director is writing the script…",
   "job.designing": "Designing the character…",
   "job.painting": "Painting the keyframes…",
@@ -217,6 +216,10 @@ export const en: Record<string, string> = {
   "job.finished": "Finished",
   "job.scriptNarrated": "Script · narrated by {name}",
   "job.queued": "Queued",
+  "job.storedOnFal": "stored on fal",
+  "job.openFilmPage": "Open the film page",
+  "job.previewImage": "Preview image",
+  "job.previewShot": "Preview shot",
 
   // Pipeline stages
   "stage.script": "Script",
@@ -413,6 +416,7 @@ export const en: Record<string, string> = {
   "motion.scrollRight": "Scroll tabs right",
   "motion.close": "Close",
   "motion.dismiss": "Dismiss toast",
+  "motion.noOptions": "No options found.",
 
   // Agent todo
   "todo.title": "To-dos",
@@ -423,4 +427,5 @@ export const en: Record<string, string> = {
   "todo.noTasks": "No tasks yet",
   "todo.agentList": "Agent task list",
   "todo.churning": "Churning",
+  "todo.tasksCompleted": "{done} of {total} tasks completed",
 };

@@ -106,7 +106,7 @@ export default function App() {
         show(rec);
       })
       .catch(() => remember(null));
-  }, [loadFilms, show, showToast]);
+  }, [loadFilms, show, showToast, t]);
 
   const busy = job?.status === "running" || job?.status === "queued";
 

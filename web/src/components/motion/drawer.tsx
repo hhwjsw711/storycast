@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { getT } from "@/lib/i18n";
+import { useT } from "@/lib/i18n";
 import { useEffect, type ReactNode } from "react";
 import { EASE_OUT, SPRING_PANEL } from "@/lib/ease";
 import { PresenceGate } from "@/lib/presence-gate";
@@ -28,6 +28,7 @@ export function Drawer({
   ariaLabel,
   dismissable = true,
 }: DrawerProps) {
+  const t = useT();
   const reduce = useReducedMotion();
 
   useEffect(() => {
@@ -53,7 +54,7 @@ export function Drawer({
           {({ gate }) => (
             <motion.button
               type="button"
-              aria-label={getT()("motion.close")}
+              aria-label={ariaLabel ?? t("motion.close")}
               tabIndex={dismissable ? 0 : -1}
               onClick={() => dismissable && onOpenChange(false)}
               initial={{ opacity: 0 }}

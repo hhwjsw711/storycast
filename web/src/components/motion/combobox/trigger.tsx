@@ -7,6 +7,7 @@ import type {
   ReactNode,
   Ref,
 } from "react";
+import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { mergeRefs, useComboboxContext } from "./context";
 
@@ -53,16 +54,18 @@ export interface ComboboxValueProps {
 }
 
 export function ComboboxValue({
-  placeholder = "Select an option",
+  placeholder,
   children,
   className,
 }: ComboboxValueProps) {
+  const t = useT();
+  const resolvedPlaceholder = placeholder ?? t("motion.selectOption");
   const context = useComboboxContext("ComboboxValue");
   const label = context.labelFor(context.value);
   const content =
     typeof children === "function"
       ? children(context.value, label)
-      : children ?? label ?? placeholder;
+      : children ?? label ?? resolvedPlaceholder;
 
   return (
     <span
@@ -92,17 +95,20 @@ export function ComboboxInput({
   ref,
   className,
   wrapperClassName,
-  "aria-label": ariaLabel = "Search options",
+  "aria-label": ariaLabel,
   onChange,
   onClick,
   onFocus,
   onKeyDown,
   onPointerDown,
-  placeholder = "Search…",
+  placeholder,
   ...props
 }: ComboboxInputProps) {
+  const t = useT();
   const context = useComboboxContext("ComboboxInput");
   const selectedLabel = context.labelFor(context.value);
+  const resolvedAriaLabel = ariaLabel ?? t("motion.searchOptions");
+  const resolvedPlaceholder = placeholder ?? t("motion.search");
 
   const handleKeyDown = (event: ReactKeyboardEvent<HTMLInputElement>) => {
     onKeyDown?.(event);
@@ -145,7 +151,7 @@ export function ComboboxInput({
         ref={mergeRefs(ref, context.inputRef)}
         id={context.inputId}
         role="combobox"
-        aria-label={ariaLabel}
+        aria-label={resolvedAriaLabel}
         aria-autocomplete="list"
         aria-expanded={context.open}
         aria-controls={context.listId}
@@ -155,7 +161,7 @@ export function ComboboxInput({
         autoComplete="off"
         disabled={context.disabled}
         value={context.open ? context.query : (selectedLabel ?? "")}
-        placeholder={placeholder}
+        placeholder={resolvedPlaceholder}
         onPointerDown={(event) => {
           onPointerDown?.(event);
           if (event.defaultPrevented || context.open) return;

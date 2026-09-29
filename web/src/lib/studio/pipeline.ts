@@ -362,7 +362,7 @@ export class Film {
     this.st.sheet_url = rs.images[0].url;
     this.st.hero_url = rh.images[0].url;
     Object.assign(this.rec.assets, { sheet: this.st.sheet_url, hero: this.st.hero_url });
-    this.log("character", `${c.name} is ready`, { images: [this.st.sheet_url, this.st.hero_url] });
+    this.log("character", getT()("event.characterReady", { name: c.name }), { images: [this.st.sheet_url, this.st.hero_url] });
   }
 
   async tts(b: Block, force = false) {

@@ -128,7 +128,7 @@ export function JobPanel({ job, events, onResume }: Props) {
           >
             <FilmPlayer src={job.result.video} cleanSrc={job.result.clean} poster={job.result.poster} className="mt-6 border border-border" />
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-              <p className="text-sm text-muted-foreground">{job.result.duration} s · stored on fal</p>
+              <p className="text-sm text-muted-foreground">{job.result.duration} s · {t("job.storedOnFal")}</p>
               <div className="flex flex-wrap gap-2">
                 <Button
                   variant="secondary"
@@ -146,7 +146,7 @@ export function JobPanel({ job, events, onResume }: Props) {
                   <Download className="size-4" /> {saving ? t("job.saving") : t("job.download")}
                 </Button>
                 <Button size="md" onClick={() => navigate(`/films/${job.id}`)}>
-                  <Share2 className="size-4" /> {SHARING ? t("job.watchShare") : "Open the film page"}
+                  <Share2 className="size-4" /> {SHARING ? t("job.watchShare") : t("job.openFilmPage")}
                 </Button>
               </div>
             </div>
@@ -217,12 +217,12 @@ export function JobPanel({ job, events, onResume }: Props) {
               >
                 <div className={cn("grid gap-1.5", (e.images?.length ?? 0) + (e.videos?.length ?? 0) > 2 ? "grid-cols-3 sm:grid-cols-4" : "grid-cols-2")}>
                   {e.images?.map((u) => (
-                    <button key={u} type="button" onClick={() => openUrl(u)} className="overflow-hidden rounded-lg bg-muted" aria-label="Preview image">
+                    <button key={u} type="button" onClick={() => openUrl(u)} className="overflow-hidden rounded-lg bg-muted" aria-label={t("job.previewImage")}>
                       <img src={u} alt="" loading="lazy" className="aspect-video w-full object-cover transition-transform duration-300 hover:scale-105" />
                     </button>
                   ))}
                   {e.videos?.map((u) => (
-                    <button key={u} type="button" onClick={() => openUrl(u)} className="group relative overflow-hidden rounded-lg bg-black" aria-label="Preview shot">
+                    <button key={u} type="button" onClick={() => openUrl(u)} className="group relative overflow-hidden rounded-lg bg-black" aria-label={t("job.previewShot")}>
                       <video src={u} muted loop playsInline autoPlay preload="metadata" className="aspect-video w-full object-cover" />
                       <span className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
                         <FilmIcon className="size-5 text-white drop-shadow" />
