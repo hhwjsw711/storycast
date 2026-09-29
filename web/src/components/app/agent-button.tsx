@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Check, Copy } from "lucide-react";
 import { ActionSwapIcon } from "@/components/motion/action-swap";
 import { agentBrief, useAgentContext } from "@/lib/agent";
+import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 const MARKS = [
@@ -25,6 +26,7 @@ async function writeClipboard(text: string) {
 
 export function AgentPromptButton({ className }: { className?: string }) {
   const context = useAgentContext();
+  const t = useT();
   const [state, setState] = useState<"idle" | "busy" | "done">("idle");
 
   async function copy() {
@@ -43,7 +45,7 @@ export function AgentPromptButton({ className }: { className?: string }) {
     <button
       type="button"
       onClick={copy}
-      title="A step-by-step brief your coding agent can run on fal with your key"
+      title={t("agent.brief")}
       className={cn(
         "group inline-flex h-9 items-center gap-2 rounded-full border border-border bg-card/60 py-1 pr-3 pl-1 text-[13px] text-muted-foreground backdrop-blur transition-colors hover:border-border-strong hover:text-foreground",
         className,
@@ -58,7 +60,7 @@ export function AgentPromptButton({ className }: { className?: string }) {
           </span>
         ))}
       </span>
-      <span>{state === "done" ? "Copied" : "Copy agent prompt"}</span>
+      <span>{state === "done" ? t("agent.copied") : t("agent.copyPrompt")}</span>
       <ActionSwapIcon value={state === "done" ? "done" : "copy"} className="opacity-70">
         {state === "done" ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
       </ActionSwapIcon>

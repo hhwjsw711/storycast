@@ -4,6 +4,7 @@ import { useMemo, useRef, useState } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/motion/tabs";
 import { TiltCard } from "@/components/motion/tilt-card";
 import { SPRING_LAYOUT } from "@/lib/ease";
+import { useT } from "@/lib/i18n";
 import type { Style } from "@/lib/api";
 
 export type CustomStyle = { preview: string; url: string; uploading: boolean };
@@ -47,6 +48,7 @@ function Caption({ children, blurb }: { children: React.ReactNode; blurb?: strin
 }
 
 export function StylePicker({ styles, categories, value, onChange, custom, onCustomFile }: Props) {
+  const t = useT();
   const fileRef = useRef<HTMLInputElement>(null);
   const [cat, setCat] = useState("All");
   const shown = useMemo(() => (cat === "All" ? styles : styles.filter((s) => s.category === cat)), [styles, cat]);
@@ -57,7 +59,7 @@ export function StylePicker({ styles, categories, value, onChange, custom, onCus
       <div className="-mx-1 overflow-x-auto px-1">
         <Tabs value={cat} onValueChange={setCat} variant="segment">
           <TabsList>
-            <TabsTrigger value="All">All {styles.length}</TabsTrigger>
+            <TabsTrigger value="All">{t("create.allN", { n: styles.length })}</TabsTrigger>
             {categories.map((c) => (
               <TabsTrigger key={c} value={c}>
                 {c} <span className="ml-1 opacity-50">{count(c)}</span>
@@ -100,7 +102,7 @@ export function StylePicker({ styles, categories, value, onChange, custom, onCus
                 ) : (
                   <motion.span key="empty" className="flex flex-col items-center gap-1 pb-4 text-muted-foreground">
                     <ImagePlus className="size-5" />
-                    <span className="text-[11px]">Upload an illustration</span>
+                    <span className="text-[11px]">{t("create.uploadStyle")}</span>
                   </motion.span>
                 )}
               </AnimatePresence>
@@ -110,15 +112,15 @@ export function StylePicker({ styles, categories, value, onChange, custom, onCus
                 </span>
               )}
               {custom ? (
-                <Caption>Your own style</Caption>
+                <Caption>{t("create.yourStyle")}</Caption>
               ) : (
-                <span className="absolute inset-x-0 bottom-1.5 text-center text-[12px] font-medium">Your own style</span>
+                <span className="absolute inset-x-0 bottom-1.5 text-center text-[12px] font-medium">{t("create.yourStyle")}</span>
               )}
               {custom && (
                 <span
                   role="button"
                   tabIndex={0}
-                  aria-label="Replace illustration"
+                  aria-label={t("create.replaceStyle")}
                   onClick={(e) => {
                     e.stopPropagation();
                     fileRef.current?.click();

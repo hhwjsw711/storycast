@@ -13,6 +13,7 @@ import {
 } from "react";
 import { ActionSwapRollText } from "@/components/motion/action-swap-roll";
 import { AgentDisclosure } from "@/components/agents/agent-disclosure";
+import { getT } from "@/lib/i18n";
 import {
   EASE_OUT,
   SPRING_LAYOUT,
@@ -46,10 +47,10 @@ export interface TodoListProps {
 }
 
 function statusLabel(status: TodoItemStatus) {
-  if (status === "in-progress") return "In progress";
-  if (status === "completed") return "Completed";
-  if (status === "cancelled") return "Cancelled";
-  return "Pending";
+  if (status === "in-progress") return getT()("todo.inProgress");
+  if (status === "completed") return getT()("todo.completed");
+  if (status === "cancelled") return getT()("todo.cancelled");
+  return getT()("todo.pending");
 }
 
 function TodoHeaderIcon({ complete }: { complete: boolean }) {
@@ -199,7 +200,7 @@ function TodoStatusIcon({
 
 export function TodoList({
   items,
-  title = "To-dos",
+  title = getT()("todo.title"),
   open,
   defaultOpen = true,
   onOpenChange,
@@ -257,7 +258,7 @@ export function TodoList({
 
   return (
     <section
-      aria-label="Agent task list"
+      aria-label={getT()("todo.agentList")}
       className={cn(
         "w-full overflow-hidden rounded-2xl border border-border/70",
         className,

@@ -10,12 +10,13 @@ import { Lightbox, downloadFile, type LightboxItem } from "@/components/app/ligh
 import { ShareDialog } from "@/components/app/share-dialog";
 import { Button } from "@/components/motion/button/base";
 import { EASE_OUT } from "@/lib/ease";
+import { useT } from "@/lib/i18n";
 import { Link, navigate } from "@/lib/router";
 import { cn } from "@/lib/utils";
 import { STAGES, clock, languageName, nativeLanguage, type CastMember, type Film } from "@/lib/api";
 import { SHARING, ShareError, countView, isSharedId, ownedFilm, report, sharedCopy, sharedFilm } from "@/lib/share";
 
-const STAGE_LABEL: Record<string, string> = { ...Object.fromEntries(STAGES), done: "Done" };
+const STAGE_KEYS = new Set<string>(STAGES.map(([k]) => k));
 
 const CREDITS = (voice: string) => [
   { role: "Story & direction", who: "Claude Opus 5.5", note: "script, shot plan and a second editing pass for flow" },
@@ -26,9 +27,9 @@ const CREDITS = (voice: string) => [
   { role: "Edit, mix & subtitles", who: "fal ffmpeg-api · workflow-utilities", note: "trim, merge, compose, loudness, word-by-word captions" },
 ];
 
-const ago = (created: number) => {
+const ago = (created: number, t: (key: string, params?: Record<string, string | number>) => string) => {
   const d = Math.max(0, Date.now() / 1000 - created);
-  if (d < 3600) return `${Math.max(1, Math.round(d / 60))} min ago`;
+  if (d < 3600) return t("watch.nMinAgo", { n: Math.max(1, Math.round(d / 60)) });
   if (d < 86400) return `${Math.round(d / 3600)} h ago`;
   return new Date(created * 1000).toLocaleDateString("en", { day: "numeric", month: "short", year: "numeric" });
 };
@@ -56,12 +57,11 @@ function StoryCard({ film }: { film: Film }) {
   );
 }
 
-const REASONS = ["Inappropriate", "Spam", "Copyright", "Something else"];
-
 function ReportButton({ id }: { id: string }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [sent, setSent] = useState(false);
-  if (sent) return <span className="self-center text-xs text-muted-foreground">Thanks, reported</span>;
+  if (sent) return <span className="self-center text-xs text-muted-foreground">{t("watch.thanksReported")}</span>;
   return (
     <div className="relative">
       <Button variant="ghost" size="icon" className="rounded-full border border-border" aria-label="Report" onClick={() => setOpen((o) => !o)}>
@@ -69,10 +69,10 @@ function ReportButton({ id }: { id: string }) {
       </Button>
       {open && (
         <div className="absolute top-12 right-0 z-20 flex w-48 flex-col rounded-2xl border border-border bg-card p-1.5 shadow-xl">
-          <p className="px-2.5 py-1.5 text-xs text-muted-foreground">Report this story</p>
-          {REASONS.map((r) => (
+          <p className="px-2.5 py-1.5 text-xs text-muted-foreground">{t("watch.report")}</p>
+          {[t("watch.reportReason1"), t("watch.reportReason2"), t("watch.reportReason3"), t("watch.reportReason4")].map((r, i) => (
             <button
-              key={r}
+              key={i}
               type="button"
               className="rounded-xl px-2.5 py-2 text-left text-sm hover:bg-muted"
               onClick={() => {
@@ -90,6 +90,7 @@ function ReportButton({ id }: { id: string }) {
 }
 
 export function WatchPage({ id, films, cast, loading }: { id: string; films: Film[]; cast: CastMember[]; loading: boolean }) {
+  const t = useT();
   const [remote, setRemote] = useState<{ id: string; film: Film | null; code?: string } | null>(null);
   useEffect(() => {
     if (!isSharedId(id)) return;
@@ -123,11 +124,11 @@ export function WatchPage({ id, films, cast, loading }: { id: string; films: Fil
     return () => setAgentContext(null);
   }, [film]);
   useEffect(() => {
-    if (film) document.title = `${film.title} ${film.subtitle} · Memegineer`;
+    if (film) document.title = `${film.title} ${film.subtitle} · ${t("brand.name")}`;
     return () => {
-      document.title = "Memegineer";
+      document.title = t("brand.name");
     };
-  }, [film]);
+  }, [film, t]);
 
   const narrator = film && (cast.find((c) => c.id === film.character_id) ?? cast.find((c) => c.name === film.narrator));
   const { sameNarrator, more } = useMemo(() => {
@@ -139,6 +140,9 @@ export function WatchPage({ id, films, cast, loading }: { id: string; films: Fil
     const rest = others.filter((x) => x.narrator !== film.narrator).sort((a, b) => score(b) - score(a) || b.created - a.created);
     return { sameNarrator: same, more: rest.slice(0, 12) };
   }, [film, films]);
+
+  const stageLabel = (stage: string) =>
+    stage === "done" ? "Done" : STAGE_KEYS.has(stage) ? t(`stage.${stage}`) : stage;
 
   if (!film) {
     return loading || waiting ? (
@@ -207,16 +211,16 @@ export function WatchPage({ id, films, cast, loading }: { id: string; films: Fil
                 {film.style_label}
               </Link>
               <span className="font-mono text-muted-foreground">{fmtDuration(film.duration)}</span>
-              <span className="text-muted-foreground">· {ago(film.created)}</span>
+              <span className="text-muted-foreground">· {ago(film.created, t)}</span>
               {film.community && (
                 <span className="inline-flex items-center gap-1 text-muted-foreground">
                   · <Eye className="size-3.5" /> {film.views ?? 0}
                 </span>
               )}
               {(film.status === "pending" || film.in_review) && (
-                <span className="rounded-full bg-muted px-2 py-0.5 text-muted-foreground">Waiting for review · only you can see it</span>
+                <span className="rounded-full bg-muted px-2 py-0.5 text-muted-foreground">{t("share.inReview")}</span>
               )}
-              {film.status === "unlisted" && <span className="rounded-full bg-muted px-2 py-0.5 text-muted-foreground">Unlisted</span>}
+              {film.status === "unlisted" && <span className="rounded-full bg-muted px-2 py-0.5 text-muted-foreground">{t("watch.unlisted")}</span>}
             </div>
             <h1 className="mt-3 text-3xl leading-tight font-semibold tracking-tight sm:text-4xl">{film.title}</h1>
             <p className="mt-1 text-lg text-muted-foreground sm:text-xl">{film.subtitle}</p>
@@ -225,7 +229,7 @@ export function WatchPage({ id, films, cast, loading }: { id: string; films: Fil
             <AgentPromptButton />
             {canShare && (
               <Button className="rounded-full" onClick={() => setShareOpen(true)}>
-                <Share2 className="size-4" /> {mineShared ? "Shared" : "Share"}
+                <Share2 className="size-4" /> {mineShared ? "Shared" : t("watch.share")}
               </Button>
             )}
             {film.community && !mineShared && <ReportButton id={film.id} />}
@@ -273,7 +277,7 @@ export function WatchPage({ id, films, cast, loading }: { id: string; films: Fil
             {narrator && <img src={narrator.thumb} alt="" className="size-full object-cover object-top" />}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Narrated by</p>
+            <p className="text-[11px] uppercase tracking-wider text-muted-foreground">{t("watch.narratedBy")}</p>
             <p className="mt-0.5 text-lg font-semibold tracking-tight">{film.narrator || "An original narrator"}</p>
             {narrator?.personality && <p className="text-sm text-muted-foreground">{narrator.personality}</p>}
             {voice && <p className="mt-1 text-xs text-muted-foreground">Voice · {voice}</p>}
@@ -287,17 +291,17 @@ export function WatchPage({ id, films, cast, loading }: { id: string; films: Fil
 
         {film.script.length > 0 && (
           <section className="mt-10">
-            <h2 className="text-sm font-semibold tracking-tight">The story</h2>
+            <h2 className="text-sm font-semibold tracking-tight">{t("watch.theStory")}</h2>
             <div className={cn("relative mt-3", !story && "max-h-36 overflow-hidden")}>
               <ol className="flex flex-col gap-3">
-                {film.script.map((t, i) => (
+                {film.script.map((line, i) => (
                   <li key={i} className="grid grid-cols-[2rem_1fr] gap-2 text-[15px] leading-relaxed">
                     <span className="pt-0.5 font-mono text-xs text-muted-foreground">{String(i + 1).padStart(2, "0")}</span>
                     <span>
                       {film.kinds[i] === "T" && (
-                        <span className="mr-2 inline-block rounded-full bg-primary/15 px-2 py-px align-middle text-[10px] font-medium text-primary">on camera</span>
+                        <span className="mr-2 inline-block rounded-full bg-primary/15 px-2 py-px align-middle text-[10px] font-medium text-primary">{t("watch.onCamera")}</span>
                       )}
-                      {t}
+                      {line}
                     </span>
                   </li>
                 ))}
@@ -305,19 +309,19 @@ export function WatchPage({ id, films, cast, loading }: { id: string; films: Fil
               {!story && <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-background to-transparent" />}
             </div>
             <button type="button" onClick={() => setStory((m) => !m)} className="mt-2 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-              {story ? "Show less" : `Read all ${film.script.length} lines`} <ChevronDown className={cn("size-4 transition-transform", story && "rotate-180")} />
+              {story ? t("watch.showLess") : t("watch.readAll", { n: film.script.length })} <ChevronDown className={cn("size-4 transition-transform", story && "rotate-180")} />
             </button>
           </section>
         )}
 
         <section className="mt-10 rounded-3xl border border-border bg-card p-5 sm:p-6">
-          <h2 className="text-sm font-semibold tracking-tight">Behind the story</h2>
+          <h2 className="text-sm font-semibold tracking-tight">{t("watch.behind")}</h2>
           <dl className="mt-4 grid grid-cols-2 gap-y-4 sm:grid-cols-4">
             {[
-              ["Scenes", film.script.length + 1],
-              ["On camera", talk],
-              ["Voice-over", film.script.length - talk],
-              ["Made in", made ? `${Math.max(1, Math.round(made / 60))} min` : "–"],
+              [t("watch.scenes"), film.script.length + 1],
+              [t("watch.onCameraStat"), talk],
+              [t("watch.voiceOver"), film.script.length - talk],
+              [t("watch.madeIn"), made ? `${Math.max(1, Math.round(made / 60))} min` : "–"],
             ].map(([k, v]) => (
               <div key={k}>
                 <dt className="text-[11px] uppercase tracking-wider text-muted-foreground">{k}</dt>
@@ -337,7 +341,7 @@ export function WatchPage({ id, films, cast, loading }: { id: string; films: Fil
           )}
 
           <div className="mt-7">
-            <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Credits</p>
+            <p className="text-[11px] uppercase tracking-wider text-muted-foreground">{t("watch.credits")}</p>
             <dl className="mt-3 divide-y divide-border">
               {CREDITS(voice).map((c) => (
                 <div key={c.role} className="grid gap-x-6 gap-y-0.5 py-2.5 sm:grid-cols-[11rem_1fr]">
@@ -348,7 +352,7 @@ export function WatchPage({ id, films, cast, loading }: { id: string; films: Fil
                 </div>
               ))}
             </dl>
-            <p className="mt-3 text-xs text-muted-foreground">Every frame, voice and cut was made on fal.</p>
+            <p className="mt-3 text-xs text-muted-foreground">{t("watch.everyFrame")}</p>
           </div>
 
           {film.events.length > 0 && (
@@ -361,7 +365,7 @@ export function WatchPage({ id, films, cast, loading }: { id: string; films: Fil
                   {film.events.map((e, i) => (
                     <li key={i} className="grid grid-cols-[3rem_5.5rem_1fr] gap-2 text-[13px]">
                       <span className="font-mono text-muted-foreground">{clock(e.t)}</span>
-                      <span className="text-muted-foreground">{STAGE_LABEL[e.stage] ?? e.stage}</span>
+                      <span className="text-muted-foreground">{stageLabel(e.stage)}</span>
                       <span className="min-w-0">{e.msg}</span>
                     </li>
                   ))}
@@ -392,7 +396,7 @@ export function WatchPage({ id, films, cast, loading }: { id: string; films: Fil
       <aside className="flex min-w-0 flex-col gap-8">
         {sameNarrator.length > 0 && (
           <div>
-            <h2 className="mb-3 text-sm font-semibold tracking-tight">More from {film.narrator}</h2>
+            <h2 className="mb-3 text-sm font-semibold tracking-tight">{t("watch.moreFrom", { name: film.narrator })}</h2>
             <div className="grid grid-cols-2 gap-x-3 gap-y-5">
               {sameNarrator.map((x) => (
                 <StoryCard key={x.id} film={x} />
@@ -401,14 +405,14 @@ export function WatchPage({ id, films, cast, loading }: { id: string; films: Fil
           </div>
         )}
         <div>
-          <h2 className="mb-3 text-sm font-semibold tracking-tight">Keep watching</h2>
+          <h2 className="mb-3 text-sm font-semibold tracking-tight">{t("watch.keepWatching")}</h2>
           <div className="grid grid-cols-2 gap-x-3 gap-y-5">
             {more.map((x) => (
               <StoryCard key={x.id} film={x} />
             ))}
           </div>
           <Link to="/films" className="mt-5 block rounded-full border border-border py-2 text-center text-sm text-muted-foreground transition-colors hover:text-foreground">
-            Browse all {films.length} films
+            {t("watch.browseAll", { n: films.length })}
           </Link>
         </div>
       </aside>

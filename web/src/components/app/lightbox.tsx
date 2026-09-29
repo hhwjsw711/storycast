@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { FilmPlayer } from "@/components/app/film-player";
 import { SPRING_PANEL } from "@/lib/ease";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
 
 export type LightboxItem = { url: string; kind: "image" | "video"; caption?: string };
 
@@ -21,6 +22,7 @@ export async function downloadFile(url: string, name?: string) {
 }
 
 export function Lightbox({ items, index, onIndex, onClose }: { items: LightboxItem[]; index: number | null; onIndex: (i: number) => void; onClose: () => void }) {
+  const t = useT();
   const reduce = useReducedMotion();
   const [dir, setDir] = useState(0);
   const open = index !== null && items[index] !== undefined;
@@ -64,7 +66,7 @@ export function Lightbox({ items, index, onIndex, onClose }: { items: LightboxIt
           onClick={onClose}
           role="dialog"
           aria-modal="true"
-          aria-label="Preview"
+          aria-label={t("lightbox.preview")}
         >
           <div className="flex items-center justify-between gap-3 px-4 py-3" onClick={(e) => e.stopPropagation()}>
             <p className="min-w-0 truncate text-sm text-muted-foreground">
@@ -72,10 +74,10 @@ export function Lightbox({ items, index, onIndex, onClose }: { items: LightboxIt
               {item.caption}
             </p>
             <div className="flex shrink-0 items-center gap-1">
-              <button type="button" onClick={() => downloadFile(item.url)} aria-label="Download" className="flex size-9 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground">
+              <button type="button" onClick={() => downloadFile(item.url)} aria-label={t("lightbox.download")} className="flex size-9 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground">
                 <Download className="size-4" />
               </button>
-              <button type="button" onClick={onClose} aria-label="Close preview" className="flex size-9 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground">
+              <button type="button" onClick={onClose} aria-label={t("lightbox.close")} className="flex size-9 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground">
                 <X className="size-4" />
               </button>
             </div>
@@ -112,7 +114,7 @@ export function Lightbox({ items, index, onIndex, onClose }: { items: LightboxIt
                     e.stopPropagation();
                     step(d);
                   }}
-                  aria-label={d < 0 ? "Previous" : "Next"}
+                  aria-label={d < 0 ? t("lightbox.prev") : t("lightbox.next")}
                   className={cn(
                     "absolute top-1/2 flex size-11 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-card/80 text-foreground backdrop-blur-md transition-colors hover:bg-card",
                     d < 0 ? "left-3 sm:left-5" : "right-3 sm:right-5",

@@ -5,6 +5,7 @@ import { downloadFile } from "@/components/app/lightbox";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/motion/button/base";
 import { EASE_OUT } from "@/lib/ease";
+import { useT } from "@/lib/i18n";
 import { navigate } from "@/lib/router";
 import { cn } from "@/lib/utils";
 import type { Film } from "@/lib/api";
@@ -64,12 +65,12 @@ function Turnstile({ onToken }: { onToken: (t: string) => void }) {
 }
 
 const STATUS_NOTE: Record<ShareStatus, string> = {
-  unlisted: "Anyone with the link can watch it.",
-  pending: "Waiting for review. Once approved it is in Explore, and the link works for everyone.",
-  public: "It is in Explore for everyone.",
-  hidden: "This film was taken down.",
+  unlisted: "share.anyoneWatch",
+  pending: "share.statusPending",
+  public: "share.statusPublic",
+  hidden: "share.statusHidden",
 };
-const IN_REVIEW_NOTE = "The automatic check wasn't sure about this one, so a person will take a quick look. The link works once it is approved.";
+const IN_REVIEW_NOTE = "share.inReviewNote";
 
 const GithubMark = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" aria-hidden className={className} fill="currentColor">
@@ -80,26 +81,24 @@ const GithubMark = ({ className }: { className?: string }) => (
 const clockTime = (unix: number) => new Date(unix * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
 function LimitPanel({ film, q, onExplore }: { film: Film; q: Quota; onExplore: () => void }) {
+  const t = useT();
   const [saving, setSaving] = useState(false);
   const row = "flex items-start gap-3 rounded-2xl border border-border p-3.5 text-left transition-colors hover:border-border-strong";
   const icon = "grid size-8 shrink-0 place-items-center rounded-full bg-muted";
   return (
     <div className="flex flex-col gap-3">
       <div className="rounded-2xl bg-muted/60 p-4">
-        <p className="text-sm font-medium">You've shared {q.links_per_day} stories by link today</p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          To keep Memegineer safe from abuse, everyone can share up to {q.links_per_day} stories by link a day, and every shared story is
-          checked automatically. You can still make as many films as you like.
-        </p>
+        <p className="text-sm font-medium">{t("share.sharedToday", { n: q.links_per_day })}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{t("share.keepSafe", { n: q.links_per_day })}</p>
       </div>
       <button type="button" className={row} onClick={onExplore} disabled={q.explore_left <= 0}>
         <span className={icon}>
           <Globe className="size-4" />
         </span>
         <span>
-          <span className="block text-sm font-medium">Send it to Explore instead</span>
+          <span className="block text-sm font-medium">{t("share.sendExplore")}</span>
           <span className="block text-xs text-muted-foreground">
-            {q.explore_left > 0 ? "It is reviewed first, then everyone can watch it and the link works." : "You have also reached today's Explore limit."}
+            {q.explore_left > 0 ? t("share.sendExploreNote") : t("share.exploreLimit")}
           </span>
         </span>
       </button>
@@ -120,8 +119,8 @@ function LimitPanel({ film, q, onExplore }: { film: Film; q: Quota; onExplore: (
           <Download className="size-4" />
         </span>
         <span>
-          <span className="block text-sm font-medium">{saving ? "Downloading…" : "Download the video"}</span>
-          <span className="block text-xs text-muted-foreground">Keep the MP4 and send it anywhere yourself.</span>
+          <span className="block text-sm font-medium">{saving ? t("share.downloading") : t("share.download")}</span>
+          <span className="block text-xs text-muted-foreground">{t("share.keepMp4")}</span>
         </span>
       </button>
       <div className={cn(row, "hover:border-border")}>
@@ -129,9 +128,9 @@ function LimitPanel({ film, q, onExplore }: { film: Film; q: Quota; onExplore: (
           <Clock className="size-4" />
         </span>
         <span>
-          <span className="block text-sm font-medium">Wait a little</span>
+          <span className="block text-sm font-medium">{t("share.wait")}</span>
           <span className="block text-xs text-muted-foreground">
-            {q.links_reset_at ? `You can share by link again at ${clockTime(q.links_reset_at)}.` : "You can share by link again within 24 hours."}
+            {q.links_reset_at ? t("share.linksResetAt", { time: clockTime(q.links_reset_at) }) : t("share.linksReset24")}
           </span>
         </span>
       </div>
@@ -140,8 +139,8 @@ function LimitPanel({ film, q, onExplore }: { film: Film; q: Quota; onExplore: (
           <GithubMark className="size-4" />
         </span>
         <span>
-          <span className="block text-sm font-medium">Run your own Memegineer</span>
-          <span className="block text-xs text-muted-foreground">Fork the project on GitHub and host your own copy, with your own limits.</span>
+          <span className="block text-sm font-medium">{t("share.runOwn")}</span>
+          <span className="block text-xs text-muted-foreground">{t("share.forkDesc")}</span>
         </span>
       </a>
     </div>
@@ -169,6 +168,7 @@ function Choice({ active, onClick, icon, title, note }: { active: boolean; onCli
 }
 
 export function ShareDialog({ film, existing, open, onClose, onChange }: { film: Film; existing: Owned | null; open: boolean; onClose: () => void; onChange: () => void }) {
+  const t = useT();
   const [visibility, setVis] = useState<Visibility>("unlisted");
   const [token, setToken] = useState("");
   const [busy, setBusy] = useState(false);
@@ -205,7 +205,7 @@ export function ShareDialog({ film, existing, open, onClose, onChange }: { film:
         await loadQuota();
         setLimited(true);
       } else if (e instanceof ShareError && e.code === "refused") {
-        setError("This story can't be shared: it did not pass Memegineer's safety check. You can still download it.");
+        setError(t("share.refused"));
       } else setError(e instanceof Error ? e.message : String(e));
     } finally {
       setBusy(false);
@@ -240,7 +240,7 @@ export function ShareDialog({ film, existing, open, onClose, onChange }: { film:
             transition={{ duration: 0.25, ease: EASE_OUT }}
             className="relative flex w-full max-w-md flex-col gap-5 rounded-3xl border border-border bg-card p-6 shadow-xl"
           >
-            <button type="button" onClick={onClose} disabled={busy} aria-label="Close" className="absolute top-4 right-4 grid size-8 place-items-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground">
+            <button type="button" onClick={onClose} disabled={busy} aria-label={t("share.close")} className="absolute top-4 right-4 grid size-8 place-items-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground">
               <X className="size-4" />
             </button>
             <div className="flex items-start gap-3 pr-8">
@@ -248,7 +248,7 @@ export function ShareDialog({ film, existing, open, onClose, onChange }: { film:
                 <Share2 className="size-4" />
               </span>
               <div className="min-w-0">
-                <h2 className="text-base font-medium">{existing ? "Shared story" : "Share this story"}</h2>
+                <h2 className="text-base font-medium">{existing ? t("share.sharedTitle") : t("share.title")}</h2>
                 <p className="mt-1 truncate text-sm text-muted-foreground">
                   {film.title} {film.subtitle}
                 </p>
@@ -260,15 +260,15 @@ export function ShareDialog({ film, existing, open, onClose, onChange }: { film:
                 active={visibility === "unlisted"}
                 onClick={() => (setVis("unlisted"), setLimited(false))}
                 icon={<Link2 className="size-4" />}
-                title="Anyone with the link"
-                note={q ? `Only people you send the link to can find it. ${q.links_left} of ${q.links_per_day} links left today.` : "Only people you send the link to can find it."}
+                title={t("share.anyoneLink")}
+                note={q ? t("share.anyoneDesc", { left: q.links_left, total: q.links_per_day }) : t("share.anyoneDescPlain")}
               />
               <Choice
                 active={visibility === "public"}
                 onClick={() => (setVis("public"), setLimited(false))}
                 icon={<Globe className="size-4" />}
-                title="Publish to Explore"
-                note="Reviewed first, then everyone can find it and the link works."
+                title={t("share.publish")}
+                note={t("share.publishDesc")}
               />
             </div>
 
@@ -277,19 +277,19 @@ export function ShareDialog({ film, existing, open, onClose, onChange }: { film:
                 <div className="flex items-center gap-2 rounded-2xl border border-border p-1.5 pl-4">
                   <span className="min-w-0 flex-1 truncate font-mono text-xs">{link}</span>
                   <Button size="sm" variant="secondary" onClick={copy}>
-                    {copied ? <Check className="size-4" /> : <Copy className="size-4" />} {copied ? "Copied" : "Copy"}
+                    {copied ? <Check className="size-4" /> : <Copy className="size-4" />} {copied ? t("share.copied") : t("share.copy")}
                   </Button>
                 </div>
-                <p className="-mt-2 text-xs text-muted-foreground">{existing.in_review ? IN_REVIEW_NOTE : STATUS_NOTE[existing.status]}</p>
+                <p className="-mt-2 text-xs text-muted-foreground">{existing.in_review ? t(IN_REVIEW_NOTE) : t(STATUS_NOTE[existing.status])}</p>
                 {limited && q && <LimitPanel film={film} q={q} onExplore={() => (setVis("public"), setLimited(false))} />}
                 <div className="flex flex-wrap gap-2">
                   {!existing.in_review && existing.status !== "hidden" && (visibility === "public") !== (existing.status !== "unlisted") && (
                     <Button disabled={busy} onClick={() => run(() => setVisibility(existing.id, visibility))}>
-                      {busy ? "Saving…" : visibility === "public" ? "Send to Explore" : "Take out of Explore"}
+                      {busy ? t("share.saving") : visibility === "public" ? t("share.sendToExplore") : t("share.takeOutExplore")}
                     </Button>
                   )}
                   <Button variant="ghost" onClick={() => (onClose(), navigate(`/films/${existing.id}`))}>
-                    Open the shared page
+                    {t("share.openShared")}
                   </Button>
                   <Button
                     variant="ghost"
@@ -297,7 +297,7 @@ export function ShareDialog({ film, existing, open, onClose, onChange }: { film:
                     disabled={busy}
                     onClick={() => (confirmDelete ? run(() => unshare(existing.id)) : setConfirmDelete(true))}
                   >
-                    <Trash2 className="size-4" /> {confirmDelete ? "Delete for everyone?" : "Stop sharing"}
+                    <Trash2 className="size-4" /> {confirmDelete ? t("share.deleteQ") : t("share.stopSharing")}
                   </Button>
                 </div>
               </>
@@ -309,12 +309,11 @@ export function ShareDialog({ film, existing, open, onClose, onChange }: { film:
                   <>
                     <Turnstile key={attempt} onToken={onToken} />
                     <Button disabled={busy || !token} onClick={() => run(() => shareFilm(film, visibility, token))}>
-                      {busy ? "Checking and sharing your story…" : visibility === "public" ? "Share and send to Explore" : "Create the link"}
+                      {busy ? t("share.checkingSharing") : visibility === "public" ? t("share.shareSendExplore") : t("share.createLink")}
                     </Button>
                     <p className="-mt-2 flex items-start gap-1.5 text-xs text-muted-foreground">
                       <ShieldCheck className="mt-px size-3.5 shrink-0" />
-                      Every shared story is checked automatically for safety. The film is copied to Memegineer so the link keeps working; your
-                      fal key is never shared.
+                      {t("share.safetyNote")}
                     </p>
                   </>
                 )}

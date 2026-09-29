@@ -23,13 +23,14 @@ import { StylePicker, type CustomStyle } from "@/components/app/style-picker";
 import { VoiceField } from "@/components/app/voice-field";
 import { EASE_OUT } from "@/lib/ease";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
 import { api, type Config, type NewJob, type Voice } from "@/lib/api";
 import { dollars, estimateCost } from "@/lib/studio/cost";
 import { Tabs, TabsList, TabsTrigger } from "@/components/motion/tabs";
 import type { Resolution } from "@/lib/studio/pipeline";
 
 const POPULAR = ["en", "tr", "es", "fr", "de", "pt", "ar", "hi", "zh", "ja", "ko", "ru"];
-const IDEAS = ["Why is the sky blue?", "How do bees make honey?", "The first photograph", "How do volcanoes work?"];
+const IDEAS = ["create.topicHint1", "create.topicHint2", "create.topicHint3", "create.topicHint4"];
 
 function Label({ children, aside }: { children: React.ReactNode; aside?: React.ReactNode }) {
   return (
@@ -43,6 +44,7 @@ function Label({ children, aside }: { children: React.ReactNode; aside?: React.R
 type Character = { preview: string; url: string; uploading: boolean; error?: string };
 
 function NarratorSlot({ value, name, onName, onFile, onClear }: { value: Character | null; name: string; onName: (v: string) => void; onFile: (f: File) => void; onClear: () => void }) {
+  const t = useT();
   const fileRef = useRef<HTMLInputElement>(null);
   const [drag, setDrag] = useState(false);
   return (
@@ -63,7 +65,7 @@ function NarratorSlot({ value, name, onName, onFile, onClear }: { value: Charact
         drag ? "border-primary bg-primary/5" : "border-border-strong bg-background/30",
       )}
     >
-      <button type="button" onClick={() => fileRef.current?.click()} className="relative size-10 shrink-0 overflow-hidden rounded-xl bg-muted" aria-label="Upload a character">
+      <button type="button" onClick={() => fileRef.current?.click()} className="relative size-10 shrink-0 overflow-hidden rounded-xl bg-muted" aria-label={t("create.uploadCharacter")}>
         <AnimatePresence mode="popLayout" initial={false}>
           {value ? (
             <motion.img key={value.preview} src={value.preview} alt="" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="size-full object-cover" />
@@ -83,17 +85,17 @@ function NarratorSlot({ value, name, onName, onFile, onClear }: { value: Charact
         <input
           value={name}
           onChange={(e) => onName(e.target.value)}
-          placeholder="Name your character (optional)"
+          placeholder={t("create.nameChar")}
           className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
         />
       ) : (
         <button type="button" onClick={() => fileRef.current?.click()} className="min-w-0 flex-1 text-left">
-          <p className={cn("truncate text-sm", value?.error ? "text-destructive" : "font-medium")}>{value?.error ?? (value?.uploading ? "Uploading…" : "Your own character")}</p>
-          <p className="truncate text-xs text-muted-foreground">Optional · drop an image, or one is invented</p>
+          <p className={cn("truncate text-sm", value?.error ? "text-destructive" : "font-medium")}>{value?.error ?? (value?.uploading ? t("create.uploading") : t("create.yourOwnCharacter"))}</p>
+          <p className="truncate text-xs text-muted-foreground">{t("create.optional")}</p>
         </button>
       )}
       {value ? (
-        <button type="button" onClick={onClear} aria-label="Remove character" className="flex size-8 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground">
+        <button type="button" onClick={onClear} aria-label={t("create.removeCharacter")} className="flex size-8 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground">
           <X className="size-4" />
         </button>
       ) : (
@@ -122,6 +124,7 @@ type Props = {
 };
 
 export function CreateForm({ config, busy, onStart, onError }: Props) {
+  const t = useT();
   const [topic, setTopic] = useState("");
   const [topicError, setTopicError] = useState<string | false>(false);
   const [style, setStyle] = useState(() => {
@@ -193,15 +196,15 @@ export function CreateForm({ config, busy, onStart, onError }: Props) {
 
   async function go(confirmed = false) {
     if (!topic.trim()) {
-      setTopicError("Give the film a topic first");
+      setTopicError(t("create.giveTopic"));
       return;
     }
     if (!member && ((style === "custom" && !custom?.url) || character?.uploading)) {
-      onError("An image is still uploading");
+      onError(t("create.imageUploading"));
       return;
     }
     if (choice.kind === "upload" && !character?.url) {
-      onError("Upload your character first");
+      onError(t("create.uploadCharacterFirst"));
       return;
     }
     if (minutes >= 2 && !confirmed) {
@@ -233,8 +236,8 @@ export function CreateForm({ config, busy, onStart, onError }: Props) {
   }
 
   const chosen = config.styles.find((s) => s.id === style);
-  const styleLabel = style === "custom" ? "Your own style" : chosen?.label;
-  const who = member ? member.name : choice.kind === "upload" ? charName.trim() || "Your character" : "A new character";
+  const styleLabel = style === "custom" ? t("create.yourStyle") : chosen?.label;
+  const who = member ? member.name : choice.kind === "upload" ? charName.trim() || t("create.yourCharacter") : t("create.newCharacter");
 
   return (
     <motion.section
@@ -246,7 +249,7 @@ export function CreateForm({ config, busy, onStart, onError }: Props) {
     >
       <div className="flex min-w-0 flex-col gap-5">
         <div>
-          <Label>Topic</Label>
+          <Label>{t("create.topic")}</Label>
           <Input
             value={topic}
             onChange={(v) => {
@@ -254,7 +257,7 @@ export function CreateForm({ config, busy, onStart, onError }: Props) {
               if (topicError) setTopicError(false);
             }}
             onKeyDown={(e) => e.key === "Enter" && go()}
-            placeholder="How do bees make honey?"
+            placeholder={t("create.topicPlaceholder")}
             leftIcon={<Lightbulb className="size-4" />}
             error={topicError}
             classNames={{ field: "h-12" }}
@@ -265,12 +268,12 @@ export function CreateForm({ config, busy, onStart, onError }: Props) {
                 key={idea}
                 type="button"
                 onClick={() => {
-                  setTopic(idea);
+                  setTopic(t(idea));
                   setTopicError(false);
                 }}
                 className="rounded-full border border-border px-2.5 py-0.5 text-[11px] text-muted-foreground transition-colors hover:border-border-strong hover:text-foreground"
               >
-                {idea}
+                {t(idea)}
               </button>
             ))}
           </div>
@@ -278,8 +281,8 @@ export function CreateForm({ config, busy, onStart, onError }: Props) {
 
         <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <div>
-            <Label aside={<span className="font-mono text-xs"><NumberTicker value={minutes} /> min</span>}>Length</Label>
-            <RangeSlider min={1} max={config.max_minutes} step={1} value={minutes} onValueChange={changeMinutes} aria-label="Length in minutes" formatValueText={(v) => `${v} minutes`} />
+            <Label aside={<span className="font-mono text-xs"><NumberTicker value={minutes} /> {t("create.min")}</span>}>{t("create.length")}</Label>
+            <RangeSlider min={1} max={config.max_minutes} step={1} value={minutes} onValueChange={changeMinutes} aria-label={t("create.lengthAria")} formatValueText={(v) => t("create.minutesCount", { n: v })} />
             <div className="mt-1 flex justify-between px-[7px] font-mono text-[10px] text-muted-foreground">
               {Array.from({ length: config.max_minutes }, (_, i) => (
                 <button key={i} type="button" onClick={() => changeMinutes(i + 1)} className={cn("w-3 text-center transition-colors hover:text-foreground", minutes === i + 1 && "text-foreground")}>
@@ -289,18 +292,18 @@ export function CreateForm({ config, busy, onStart, onError }: Props) {
             </div>
           </div>
           <div>
-            <Label aside={<span className="text-[11px] text-muted-foreground">{config.languages.length} languages</span>}>Language</Label>
+            <Label aside={<span className="text-[11px] text-muted-foreground">{t("create.languagesCount", { n: config.languages.length })}</span>}>{t("create.language")}</Label>
             <Combobox value={language} onValueChange={(v) => v && setLanguage(v)}>
               <ComboboxTrigger className="h-10 rounded-xl px-2.5">
-                <ComboboxInput aria-label="Search languages" placeholder="Search languages…" />
+                <ComboboxInput aria-label={t("create.searchLanguages")} placeholder={`${t("create.searchLanguages")}…`} />
               </ComboboxTrigger>
               <ComboboxContent className="w-72 rounded-2xl">
-                <ComboboxList ariaLabel="Languages" className="max-h-72 p-1.5">
-                  <ComboboxEmpty>No language found.</ComboboxEmpty>
+                <ComboboxList ariaLabel={t("create.languagesAria")} className="max-h-72 p-1.5">
+                  <ComboboxEmpty>{t("create.noLanguage")}</ComboboxEmpty>
                   {(["Popular", "All languages"] as const).map((group, gi) => (
                     <ComboboxGroup key={group}>
                       {gi > 0 ? <ComboboxSeparator /> : null}
-                      <ComboboxLabel>{group}</ComboboxLabel>
+                      <ComboboxLabel>{group === "Popular" ? t("create.popular") : t("create.allLanguages")}</ComboboxLabel>
                       {config.languages
                         .filter((l) => (group === "Popular" ? POPULAR.includes(l.code) : !POPULAR.includes(l.code)))
                         .sort((x, y) => (group === "Popular" ? POPULAR.indexOf(x.code) - POPULAR.indexOf(y.code) : x.name.localeCompare(y.name)))
@@ -321,7 +324,7 @@ export function CreateForm({ config, busy, onStart, onError }: Props) {
         </div>
 
         <div>
-          <Label aside={<span className="text-[11px] text-muted-foreground">{resolution === "480P" ? "Softer picture, lower price" : "Sharper picture"}</span>}>Quality</Label>
+          <Label aside={<span className="text-[11px] text-muted-foreground">{resolution === "480P" ? t("create.softer") : t("create.sharper")}</span>}>{t("create.quality")}</Label>
           <Tabs value={resolution} onValueChange={(v) => setResolution(v as Resolution)} variant="segment">
             <TabsList>
               <TabsTrigger value="768P">768p</TabsTrigger>
@@ -331,13 +334,13 @@ export function CreateForm({ config, busy, onStart, onError }: Props) {
         </div>
 
         <div>
-          <Label>Voice</Label>
+          <Label>{t("create.voice")}</Label>
           <VoiceField
             value={voice}
             onChange={setVoice}
             lang={language}
             topic={topic}
-            fallback={member ? { title: `${member.name}'s voice`, detail: member.voice.name ? `${member.voice.name} · pick another any time` : "Pick another any time" } : undefined}
+            fallback={member ? { title: t("create.pipsVoice", { name: member.name }), detail: member.voice.name ? t("create.voiceDesc", { voice: member.voice.name }) : t("create.pickAnother") } : undefined}
           />
         </div>
 
@@ -347,25 +350,25 @@ export function CreateForm({ config, busy, onStart, onError }: Props) {
               <motion.div
                 key="confirm"
                 role="alertdialog"
-                aria-label="Before you start"
+                aria-label={t("create.beforeStart")}
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 6 }}
                 transition={{ duration: 0.2, ease: EASE_OUT }}
                 className="rounded-2xl border border-border bg-muted/40 p-4"
               >
-                <p className="text-sm font-medium">Before you start</p>
+                <p className="text-sm font-medium">{t("create.beforeStart")}</p>
                 <ul className="mt-2.5 flex flex-col gap-2 text-xs text-muted-foreground">
                   <li className="flex gap-2">
                     <Clock className="mt-px size-3.5 shrink-0" />
-                    <span>
-                      A {minutes}-minute film takes about {eta} minutes. Keep this tab open until it's done, or production stops halfway.
-                    </span>
+                    <span>{t("create.confirmTime", { minutes, eta })}</span>
                   </li>
                   <li className="flex gap-2">
                     <Coins className="mt-px size-3.5 shrink-0" />
                     <span>
-                      It costs about <span className="font-medium text-foreground tabular-nums">{dollars(estimateCost(minutes, !member, resolution).total)}</span> on your fal key.
+                      {t("create.costsPre")}{" "}
+                      <span className="font-medium text-foreground tabular-nums">{dollars(estimateCost(minutes, !member, resolution).total)}</span>{" "}
+                      {t("create.costsSuf")}
                     </span>
                   </li>
                 </ul>
@@ -375,40 +378,40 @@ export function CreateForm({ config, busy, onStart, onError }: Props) {
                     onClick={() => setConfirm(false)}
                     className="h-10 flex-1 rounded-full border border-border text-sm transition-colors hover:border-border-strong"
                   >
-                    Back
+                    {t("create.back")}
                   </button>
                   <button
                     type="button"
                     onClick={() => go(true)}
                     className="inline-flex h-10 flex-[2] items-center justify-center gap-2 rounded-full bg-primary text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
                   >
-                    <Clapperboard className="size-4" /> Start the film
+                    <Clapperboard className="size-4" /> {t("create.startFilm")}
                   </button>
                 </div>
               </motion.div>
             ) : (
               <motion.div key="start" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
-                <StatefulButton size="lg" state={submit} onClick={() => go()} loadingText="Starting" successText="Rolling" icon={<Clapperboard className="size-4" />} className="w-full">
-                  Make the film
+                <StatefulButton size="lg" state={submit} onClick={() => go()} loadingText={t("create.starting")} successText={t("create.rolling")} icon={<Clapperboard className="size-4" />} className="w-full">
+                  {t("create.makeFilm")}
                 </StatefulButton>
               </motion.div>
             )}
           </AnimatePresence>
           <p className="text-center text-[11px] text-muted-foreground">
-            {busy ? "A film is in production; new ones wait in line." : `${who} · ${member ? member.style_label : styleLabel} · ${minutes} min · ready in about ${eta} min`}
+            {busy ? t("create.inProduction") : t("create.ready", { character: who, style: (member ? member.style_label : styleLabel) ?? "", minutes, eta })}
           </p>
           {(() => {
             const c = estimateCost(minutes, !member, resolution);
             return (
               <p className="text-center text-[11px] text-muted-foreground">
-                About{" "}
+                {t("create.aboutPre")}{" "}
                 <span
                   className="cursor-help tabular-nums underline decoration-dotted underline-offset-2"
-                  title={`Video ${dollars(c.video)} · images ${dollars(c.images)} · voice & music ${dollars(c.sound)} · direction & checks ${dollars(c.direction)}`}
+                  title={t("create.costTitle", { video: dollars(c.video), images: dollars(c.images), sound: dollars(c.sound), direction: dollars(c.direction) })}
                 >
                   {dollars(c.total)}
                 </span>{" "}
-                on your fal key
+                {t("create.aboutSuf")}
               </p>
             );
           })()}
@@ -417,8 +420,8 @@ export function CreateForm({ config, busy, onStart, onError }: Props) {
 
       <div className="flex min-w-0 flex-col gap-5">
         <div>
-          <Label aside={<span className="truncate text-[11px] text-muted-foreground">{member ? `${member.name}: ${member.personality}` : `${config.characters.length} narrators, each with their own look and voice`}</span>}>
-            Character
+          <Label aside={<span className="truncate text-[11px] text-muted-foreground">{member ? `${member.name}: ${member.personality}` : t("create.castAside", { n: config.characters.length })}</span>}>
+            {t("create.character")}
           </Label>
           <CharacterPicker cast={config.characters} groups={config.character_groups} lang={language} value={choice} onChange={setChoice} uploadPreview={character?.preview} />
         </div>
@@ -426,7 +429,7 @@ export function CreateForm({ config, busy, onStart, onError }: Props) {
         <AnimatePresence initial={false}>
           {choice.kind === "upload" && (
             <motion.div key="upload" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3, ease: EASE_OUT }} className="overflow-hidden">
-              <Label>Your character</Label>
+              <Label>{t("create.yourCharacter")}</Label>
               <NarratorSlot
                 value={character}
                 name={charName}
@@ -441,8 +444,8 @@ export function CreateForm({ config, busy, onStart, onError }: Props) {
           )}
           {choice.kind !== "cast" && (
             <motion.div key="look" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3, ease: EASE_OUT }} className="overflow-hidden">
-              <Label aside={<span className="truncate text-[11px] text-muted-foreground">{style === "custom" ? "Your uploaded illustration sets the look" : `${chosen?.label}: ${chosen?.blurb}`}</span>}>
-                {choice.kind === "upload" ? "Redraw it in" : "Look"}
+              <Label aside={<span className="truncate text-[11px] text-muted-foreground">{style === "custom" ? t("create.customLookAside") : `${chosen?.label}: ${chosen?.blurb}`}</span>}>
+                {choice.kind === "upload" ? t("create.redrawIn") : t("create.look")}
               </Label>
               <StylePicker styles={config.styles} categories={config.categories} value={style} onChange={setStyle} custom={custom} onCustomFile={uploadStyle} />
             </motion.div>

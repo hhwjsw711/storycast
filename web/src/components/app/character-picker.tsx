@@ -7,6 +7,7 @@ import { TiltCard } from "@/components/motion/tilt-card";
 import { SPRING_LAYOUT } from "@/lib/ease";
 import { usePlayer } from "@/lib/use-player";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
 import { api, type CastMember } from "@/lib/api";
 
 export type CharacterChoice = { kind: "cast"; id: string } | { kind: "new" } | { kind: "upload" };
@@ -35,6 +36,7 @@ type Props = {
 };
 
 export function CharacterPicker({ cast, groups, value, onChange, uploadPreview, lang }: Props) {
+  const t = useT();
   const player = usePlayer();
   const [view, setView] = useState<{ items: LightboxItem[]; i: number } | null>(null);
   const [group, setGroup] = useState("All");
@@ -53,7 +55,7 @@ export function CharacterPicker({ cast, groups, value, onChange, uploadPreview, 
         <div className="-mx-1 min-w-0 overflow-x-auto px-1">
           <Tabs value={group} onValueChange={setGroup} variant="segment">
             <TabsList>
-              <TabsTrigger value="All">All {cast.length}</TabsTrigger>
+              <TabsTrigger value="All">{t("create.allN", { n: cast.length })}</TabsTrigger>
               {groups.map((g) => (
                 <TabsTrigger key={g} value={g}>
                   {g} <span className="ml-1 opacity-50">{cast.filter((c) => c.group === g).length}</span>
@@ -64,7 +66,7 @@ export function CharacterPicker({ cast, groups, value, onChange, uploadPreview, 
         </div>
         <label className="ml-auto flex h-9 min-w-44 items-center gap-2 rounded-full border border-border bg-background/50 px-3 text-sm focus-within:border-border-strong">
           <Search className="size-3.5 text-muted-foreground" />
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Find a character" className="w-full bg-transparent text-xs outline-none placeholder:text-muted-foreground" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("create.findCharacter")} className="w-full bg-transparent text-xs outline-none placeholder:text-muted-foreground" />
         </label>
       </div>
       <div className="grid grid-cols-3 items-start gap-2.5 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
@@ -73,8 +75,8 @@ export function CharacterPicker({ cast, groups, value, onChange, uploadPreview, 
             <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted">
               <Sparkles className="size-4 text-accent" />
             </span>
-            <span className="text-[12.5px] leading-tight font-semibold">Invent one</span>
-            <span className="line-clamp-3 text-[10.5px] leading-snug text-muted-foreground">A new character for your topic, in any look</span>
+            <span className="text-[12.5px] leading-tight font-semibold">{t("create.inventOne")}</span>
+            <span className="line-clamp-3 text-[10.5px] leading-snug text-muted-foreground">{t("create.inventDesc")}</span>
           </div>
           {value.kind === "new" && <Ring />}
         </button>
@@ -92,8 +94,8 @@ export function CharacterPicker({ cast, groups, value, onChange, uploadPreview, 
                 <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted">
                   <ImagePlus className="size-4" />
                 </span>
-                <span className="text-[12.5px] leading-tight font-semibold">Your own</span>
-                <span className="line-clamp-3 text-[10.5px] leading-snug text-muted-foreground">Upload a character, we redraw it</span>
+                <span className="text-[12.5px] leading-tight font-semibold">{t("create.yourOwn")}</span>
+                <span className="line-clamp-3 text-[10.5px] leading-snug text-muted-foreground">{t("create.yourOwnDesc")}</span>
               </>
             )}
           </div>
@@ -120,12 +122,12 @@ export function CharacterPicker({ cast, groups, value, onChange, uploadPreview, 
                 setView({
                   items: [
                     { url: c.hero, kind: "image", caption: `${c.name} · ${c.personality}` },
-                    { url: c.sheet, kind: "image", caption: `${c.name} · model sheet` },
+                    { url: c.sheet, kind: "image", caption: `${c.name} · ${t("create.modelSheet")}` },
                   ],
                   i: 0,
                 })
               }
-              aria-label={`Look at ${c.name}`}
+              aria-label={t("create.lookAt", { name: c.name })}
               className="absolute top-1.5 left-1.5 z-20 flex size-6 items-center justify-center rounded-full bg-black/45 text-white opacity-0 backdrop-blur transition-opacity group-hover/card:opacity-100 hover:bg-black/70"
             >
               <Expand className="size-3" />
@@ -133,8 +135,8 @@ export function CharacterPicker({ cast, groups, value, onChange, uploadPreview, 
             <button
               type="button"
               onClick={() => player.toggle(c.id, api.characterVoice(c.id, lang))}
-              aria-label={player.playing === c.id ? `Stop ${c.name}` : `Hear ${c.name}`}
-              title={`Hear ${c.name} (${c.voice.name.split(/\s+[-–]\s+/)[0]})`}
+              aria-label={player.playing === c.id ? t("create.stopName", { name: c.name }) : t("create.hearName", { name: c.name })}
+              title={t("create.hearVoice", { name: c.name, voice: c.voice.name.split(/\s+[-–]\s+/)[0] })}
               className={cn(
                 "absolute top-1.5 right-1.5 z-20 flex size-7 items-center justify-center rounded-full text-white backdrop-blur transition-opacity hover:bg-black/70",
                 player.playing === c.id ? "bg-primary opacity-100" : "bg-black/45 opacity-0 group-hover/card:opacity-100",

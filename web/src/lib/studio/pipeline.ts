@@ -1,4 +1,5 @@
 import type { JobEvent, Plan as EventPlan } from "@/lib/api";
+import { getT } from "@/lib/i18n";
 import { studioData, type CastFull, type StyleFull } from "./data";
 import * as director from "./director";
 import type { Block, Given, GivenVoice, Plan } from "./director";
@@ -251,7 +252,7 @@ export class Film {
     this.styleRef = j.style_url || preset?.ref || "";
     if (this.st.style) this.style = this.st.style;
     else if (j.style === "custom") {
-      this.log("director", "Opus 5.5 is studying your illustration style…");
+      this.log("director", getT()("event.studyingStyle"));
       const d = await director.describeStyle(j.style_url);
       this.style = this.st.style = {
         id: "custom",
@@ -265,7 +266,7 @@ export class Film {
         character_hint: d.character_hint || "an original narrator that belongs to this world",
         palette: d.palette,
       };
-      this.log("director", `Style: ${this.style.label}: ${this.style.anchor.slice(0, 160)}…`);
+      this.log("director", getT()("event.styleReady", { label: this.style.label, desc: this.style.anchor.slice(0, 160) }));
     } else {
       if (!preset) throw new Error(`unknown style ${j.style}`);
       this.style = this.st.style = preset;
@@ -283,19 +284,19 @@ export class Film {
           if (check.voice && !check.speaks) {
             const alt = check.native;
             if (alt) {
-              this.log("director", `${this.cast.name}'s voice is not made for this language; ${alt.name.split(" - ")[0]} narrates instead`);
+              this.log("director", getT()("event.voiceNotMade", { name: this.cast.name, alt: (check.native?.name ?? "").split(" - ")[0] }));
               j.voice = { voice_id: alt.voice_id, name: alt.name, gender: alt.gender, age: alt.age, accent: alt.accent, description: alt.description };
             }
           }
         }
       } else if (j.character_url) {
-        this.log("director", "Opus 5.5 is getting to know your character…");
+        this.log("director", getT()("event.gettingToKnow"));
         given = await director.describeCharacter(j.character_url, j.character_name);
-        this.log("director", `Narrator: ${given.name}: ${given.traits.slice(0, 160)}…`);
+        this.log("director", getT()("event.narratorReady", { name: given.name, traits: given.traits.slice(0, 160) }));
       }
       const voice = j.voice?.voice_id ? (j.voice as GivenVoice) : null;
-      if (voice) this.log("director", `Voice: ${voice.name || voice.voice_id}`);
-      this.log("director", `Opus 5.5 is writing the film (${j.minutes} min, ${this.style.label})…`);
+      if (voice) this.log("director", getT()("event.voiceReady", { name: voice.name || voice.voice_id }));
+      this.log("director", getT()("event.writing", { n: j.minutes, style: this.style.label }));
       const p = await director.plan(j.topic, this.style, j.minutes, j.lang, given, voice);
       j.project = `${p.slug}-${j.id.slice(0, 4)}`;
       p.blocks.forEach((b, i) => {
@@ -306,12 +307,12 @@ export class Film {
       p.tail.shot = `S${String(p.blocks.length + 1).padStart(2, "0")}`;
       this.st.plan = p;
       if (p.continuity && (p.continuity.rewrites || p.continuity.bridges))
-        this.log("director", `Script editor smoothed the flow: ${p.continuity.rewrites} rewritten, ${p.continuity.bridges} bridging scene${p.continuity.bridges === 1 ? "" : "s"} added`);
-      this.log("director", `“${p.title} ${p.subtitle}”: ${p.blocks.length} blocks, narrator ${p.character.name}`, {
+        this.log("director", getT()("event.scriptEdit", { rewritten: p.continuity.rewrites, bridges: p.continuity.bridges }));
+      this.log("director", getT()("event.scriptReady", { title: p.title, subtitle: p.subtitle, n: p.blocks.length, name: p.character.name }), {
         plan: this.eventPlan(),
       });
     } else {
-      this.log("director", `Resuming “${this.plan.title} ${this.plan.subtitle}”`, {
+      this.log("director", getT()("event.resuming", { title: this.plan.title, subtitle: this.plan.subtitle }), {
         plan: this.eventPlan(),
       });
     }
@@ -335,11 +336,11 @@ export class Film {
     }
     if (this.st.sheet_url && this.st.hero_url) {
       Object.assign(this.rec.assets, { sheet: this.st.sheet_url, hero: this.st.hero_url });
-      this.log("character", `${c.name} is ready`, { images: [this.st.sheet_url, this.st.hero_url] });
+      this.log("character", getT()("event.characterReady", { name: c.name }), { images: [this.st.sheet_url, this.st.hero_url] });
       return;
     }
     const [sheet, hero] = characterPrompts(this.charLine(), this.style.anchor);
-    this.log("character", `Designing ${c.name} (GPT Image 2.5)…`);
+    this.log("character", getT()("event.designing", { name: c.name }));
     const refs = [this.rec.character_url, this.styleRef].filter(Boolean);
     type Img = { images: { url: string }[] };
     let rs: Img, rh: Img;
@@ -375,7 +376,7 @@ export class Film {
       if (!String(e).toLowerCase().includes("not found") || this.plan.voice_id in curated_voices) throw e;
 
       const fallback = Object.keys(curated_voices)[0];
-      this.log("voice", `Voice unavailable on fal, switching to ${curated_voices[fallback].split(":")[0]}`);
+      this.log("voice", getT()("event.voiceFallback", { name: curated_voices[fallback].split(":")[0] }));
       this.plan.voice_id = fallback;
       r = await run<Audio>(TTS, { text: b.text, voice: fallback, stability: 0.5, language_code: this.rec.lang });
     }
@@ -385,7 +386,7 @@ export class Film {
   }
 
   async voice() {
-    this.log("voice", "Recording the narration (ElevenLabs v3)…");
+    this.log("voice", getT()("event.recording"));
     await Promise.all(this.plan.blocks.map((b) => this.tts(b)));
     const inRange = (b: Block) => b.audio_dur! >= 5.2 && b.audio_dur! <= 14.6;
     for (const b of this.plan.blocks) {
@@ -403,7 +404,7 @@ export class Film {
     }
     this.rec.assets.narration = Object.fromEntries(this.plan.blocks.map((b) => [b.id, b.audio_url]));
     const total = sum(this.plan.blocks.map((b) => b.audio_dur!));
-    this.log("voice", `Narration ready: ${total.toFixed(0)} s of speech`);
+    this.log("voice", getT()("event.narrationReady", { n: total.toFixed(0) }));
   }
 
   async oneKey(spec: Spec) {
@@ -439,7 +440,7 @@ export class Film {
   }
 
   async keyframes() {
-    this.log("keyframes", "Painting the keyframes (GPT Image 2.5)…");
+    this.log("keyframes", getT()("event.painting"));
     if (!this.st.specs) {
       const specs: Spec[] = this.plan.blocks.map((b, bi) => ({
         shot: b.shot,
@@ -453,7 +454,7 @@ export class Film {
     }
     await Promise.all(this.specs.map((s) => this.oneKey(s)));
     this.rec.assets.keyframes = Object.fromEntries(this.specs.map((s) => [s.shot, s.key_url]));
-    this.log("keyframes", `${this.specs.length} keyframes ready`, { images: this.specs.map((s) => s.key_url!) });
+    this.log("keyframes", getT()("event.keyframesReady", { n: this.specs.length }), { images: this.specs.map((s) => s.key_url!) });
   }
 
   async oneShot(spec: Spec, i: number) {
@@ -523,7 +524,7 @@ export class Film {
         spec.clip_dur = undefined;
         this.checkpoint();
         await this.oneShot(spec, i);
-        this.log("shots", `Refilmed shot ${spec.shot}`);
+        this.log("shots", getT()("event.refilmed", { shot: spec.shot }));
       }
     } catch (e) {
       if (!(e instanceof FalError) || isKeyError(e)) throw e;
@@ -534,12 +535,12 @@ export class Film {
 
   async shots() {
     const nT = this.specs.filter((s) => s.talking).length;
-    this.log("shots", `Filming ${this.specs.length - nT} H3 Max reference-to-video shots and ${nT} lip-sync shots…`);
+    this.log("shots", getT()("event.filming", { ref: this.specs.length - nT, lip: nT }));
     await Promise.all(this.specs.map((s, i) => this.oneShot(s, i)));
-    this.log("shots", "Checking every shot…");
+    this.log("shots", getT()("event.checking"));
     await Promise.all(this.specs.map((s, i) => this.checkShot(s, i)));
     this.rec.assets.clips = Object.fromEntries(this.specs.map((s) => [s.shot, s.clip_url]));
-    this.log("shots", "All shots are in the can", { videos: this.specs.map((s) => s.clip_url!) });
+    this.log("shots", getT()("event.shotsReady"), { videos: this.specs.map((s) => s.clip_url!) });
   }
 
   filmLength() {
@@ -559,7 +560,7 @@ export class Film {
       this.st.music_url = n.audio.url;
       Object.assign(this.rec.assets, { music: r.audio.url, music_bed: this.st.music_url });
     }
-    this.log("music", "Score composed (ElevenLabs Music)");
+    this.log("music", getT()("event.scoreReady"));
   }
 
   async endCard() {
@@ -626,7 +627,7 @@ export class Film {
     for (const b of p.blocks) if (!b.audio_url || !(b.audio_dur! > 0)) await this.tts(b, true);
     const { starts, segments, pictureEnd } = this.timeline();
     const total = pictureEnd + END_CARD;
-    this.log("assemble", `Cutting ${segments.length} shots on fal (trim + merge + compose)…`);
+    this.log("assemble", getT()("event.cutting", { n: segments.length }));
     const cut = await Promise.all(segments.map((s) => this.trimmed(s)));
 
     const picture = (await run<{ video: { url: string } }>(MERGE, { video_urls: [...cut, this.st.card_clip], target_fps: FPS, resolution: PICTURE[this.res] })).video
@@ -640,13 +641,13 @@ export class Film {
     const composed = (await run<{ video_url: string }>(COMPOSE, { tracks })).video_url;
     Object.assign(this.rec.assets, { cuts: Object.fromEntries(segments.map((s, i) => [s.shot, cut[i]])), picture });
 
-    this.log("assemble", "Balancing the sound (loudness-normalised mix)…");
+    this.log("assemble", getT()("event.balancing"));
     const mix = await run<{ audio: { url: string } }>(LOUDNORM, { audio_url: composed, integrated_loudness: FINAL_LUFS, true_peak: -1.5 });
     let clean = (await run<{ video: { url: string } }>(MERGE_AV, { video_url: composed, audio_url: mix.audio.url })).video.url;
     if ((await duration(clean)) > total + 0.3)
       clean = (await run<{ video: { url: string } }>(TRIM, { video_url: clean, start_time: 0, duration: Math.round(total * 1000) / 1000 })).video.url;
 
-    this.log("subtitles", "Adding word-by-word subtitles (fal auto-subtitle)…");
+    this.log("subtitles", getT()("event.subtitles"));
     const { languages } = await studioData();
     let r: { video: { url: string }; subtitle_count?: number };
     try {
@@ -657,7 +658,7 @@ export class Film {
     } catch (e) {
       if (!(e instanceof FalError)) throw e;
 
-      this.log("subtitles", "Subtitles unavailable for this language, keeping the clean cut");
+      this.log("subtitles", getT()("event.subsUnavailable"));
       r = { video: { url: clean }, subtitle_count: 0 };
     }
     Object.assign(this.rec.assets, { composed, clean, film: r.video.url });
@@ -669,7 +670,7 @@ export class Film {
       duration: Math.round(total * 10) / 10,
       subtitle_count: r.subtitle_count,
     };
-    this.log("done", `Done: ${total.toFixed(1)} s film`);
+    this.log("done", getT()("event.done", { n: (total.toFixed(1)) }));
   }
 
   record(): FilmRecord {

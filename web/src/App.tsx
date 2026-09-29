@@ -14,6 +14,7 @@ import { api, toJob, type Config, type Film, type Job, type JobEvent, type NewJo
 import { clearFalKey, falKey, onKeyChange } from "@/lib/studio/fal";
 import { saveRecord, type FilmRecord } from "@/lib/studio/store";
 import { navigate, usePath } from "@/lib/router";
+import { useT } from "@/lib/i18n";
 import { TextReveal } from "@/components/motion/text-reveal";
 
 const JOB_KEY = "storycast-job";
@@ -31,6 +32,7 @@ export default function App() {
   const [filmsLoading, setFilmsLoading] = useState(true);
   const [shared, setShared] = useState<Film[]>([]);
   const path = usePath();
+  const t = useT();
   const [job, setJob] = useState<Job | null>(null);
   const [events, setEvents] = useState<JobEvent[]>([]);
   const [hasKey, setHasKey] = useState(() => !!falKey());
@@ -67,14 +69,14 @@ export default function App() {
       const final = await done;
       show(final);
       if (final.status === "done") {
-        showToast({ status: "success", title: "Your film is ready", description: final.result?.title, duration: 8000 });
+        showToast({ status: "success", title: t("toast.filmReady"), description: final.result?.title, duration: 8000 });
         loadFilms();
       } else {
         if (/401|403|key/i.test(final.error || "")) setKeyOpen(true);
-        showToast({ status: "error", title: "Production stopped", description: final.error?.slice(0, 140), duration: 8000 });
+        showToast({ status: "error", title: t("toast.productionStopped"), description: final.error?.slice(0, 140), duration: 8000 });
       }
     },
-    [loadFilms, show, showToast],
+    [loadFilms, show, showToast, t],
   );
 
   const onEvent = useCallback((e: JobEvent, rec: FilmRecord) => {
@@ -86,7 +88,7 @@ export default function App() {
     api
       .config()
       .then(setConfig)
-      .catch(() => showToast({ status: "error", title: "Could not load the studio data" }));
+      .catch(() => showToast({ status: "error", title: t("misc.loadingData") }));
     loadFilms();
     let last: string | null = null;
     try {
@@ -98,7 +100,7 @@ export default function App() {
       .then(async (rec) => {
         if (rec.status === "running" || rec.status === "queued") {
           rec.status = "error";
-          rec.error = "Stopped because the tab was closed or reloaded. Everything finished so far is kept.";
+          rec.error = t("toast.stopped");
           await saveRecord(rec);
         }
         show(rec);
@@ -121,12 +123,12 @@ export default function App() {
   async function start(body: NewJob) {
     if (!falKey()) {
       setKeyOpen(true);
-      throw new Error("Connect your fal key first");
+      throw new Error(t("toast.connectFirst"));
     }
     const { rec, done } = await api.create(body, onEvent);
     if (!window.location.pathname.startsWith("/create")) navigate("/create");
     follow(rec, done);
-    showToast({ status: "loading", title: "Production started", description: "Keep this tab open while the film is made", duration: 6000 });
+    showToast({ status: "loading", title: t("toast.productionStarted"), description: t("toast.keepTab"), duration: 6000 });
     requestAnimationFrame(() => document.getElementById("production")?.scrollIntoView({ behavior: "smooth", block: "start" }));
   }
 
@@ -148,7 +150,7 @@ export default function App() {
 
   return (
     <div className="min-h-dvh">
-      <Header hasKey={hasKey} onKey={() => setKeyOpen(true)} onDisconnect={() => (clearFalKey(), showToast({ status: "success", title: "fal key removed from this browser", duration: 3000 }))} />
+      <Header hasKey={hasKey} onKey={() => setKeyOpen(true)} onDisconnect={() => (clearFalKey(), showToast({ status: "success", title: t("toast.keyRemoved"), duration: 3000 }))} />
       <main className="mx-auto flex max-w-7xl flex-col gap-10 px-4 pb-24 sm:px-6">
         {path.startsWith("/films/") ? (
           <WatchPage id={decodeURIComponent(path.slice("/films/".length))} films={everything} cast={config?.characters ?? []} loading={filmsLoading} />
@@ -159,9 +161,9 @@ export default function App() {
             <header className="flex flex-wrap items-end justify-between gap-4">
               <div>
                 <h1 className="text-3xl font-medium tracking-tight">
-                  <TextReveal text="Make a film" />
+                  <TextReveal text={t("create.title")} />
                 </h1>
-                <p className="mt-1 text-sm text-muted-foreground">Pick a topic, a look and a voice. The rest is directed for you.</p>
+                <p className="mt-1 text-sm text-muted-foreground">{t("create.subtitle")}</p>
               </div>
               <AgentPromptButton />
             </header>
@@ -180,13 +182,13 @@ export default function App() {
           </>
         )}
       </main>
-      <footer className="border-t border-border py-8 text-center text-xs text-muted-foreground">Memegineer · pick a character, type a topic, get a film</footer>
+      <footer className="border-t border-border py-8 text-center text-xs text-muted-foreground">{t("brand.name")} · {t("brand.tagline")}</footer>
       <KeyDialog
         open={keyOpen}
         onClose={() => setKeyOpen(false)}
         onConnected={() => {
           setKeyOpen(false);
-          showToast({ status: "success", title: "fal key connected", description: "You can make films now", duration: 4000 });
+          showToast({ status: "success", title: t("toast.keyConnected"), description: t("toast.makeFilmsNow"), duration: 4000 });
         }}
       />
       <AnimatedToastStack toasts={toasts} onDismiss={dismissToast} position="bottom-right" fixed portal />

@@ -5,17 +5,18 @@ import { Input } from "@/components/motion/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/motion/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/motion/tabs";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
 import { languageName, nativeLanguage, type CastMember, type Film } from "@/lib/api";
 import { SHARING, owned } from "@/lib/share";
 import { AgentPromptButton } from "@/components/app/agent-button";
 
 const LENGTHS: Record<string, [number, number]> = { any: [0, 1e9], short: [0, 90], medium: [90, 240], long: [240, 1e9] };
 const SORTS: Record<string, { label: string; fn: (a: Film, b: Film) => number }> = {
-  newest: { label: "Newest", fn: (a, b) => b.created - a.created },
-  oldest: { label: "Oldest", fn: (a, b) => a.created - b.created },
-  longest: { label: "Longest", fn: (a, b) => b.duration - a.duration },
-  shortest: { label: "Shortest", fn: (a, b) => a.duration - b.duration },
-  title: { label: "A–Z", fn: (a, b) => a.title.localeCompare(b.title) },
+  newest: { label: "films.newest", fn: (a, b) => b.created - a.created },
+  oldest: { label: "films.oldest", fn: (a, b) => a.created - b.created },
+  longest: { label: "films.longest", fn: (a, b) => b.duration - a.duration },
+  shortest: { label: "films.shortest", fn: (a, b) => a.duration - b.duration },
+  title: { label: "films.az", fn: (a, b) => a.title.localeCompare(b.title) },
 };
 const PAGE_SIZE = 24;
 
@@ -64,12 +65,13 @@ function pageList(page: number, pages: number): (number | "…")[] {
 }
 
 function Pagination({ page, pages, onPage }: { page: number; pages: number; onPage: (n: number) => void }) {
+  const t = useT();
   if (pages <= 1) return null;
   const step =
     "grid size-10 place-items-center rounded-full border border-border text-muted-foreground transition-colors hover:border-border-strong hover:text-foreground disabled:pointer-events-none disabled:opacity-40";
   return (
-    <nav aria-label="Pages" className="flex items-center justify-center gap-1.5">
-      <button type="button" className={step} disabled={page <= 1} onClick={() => onPage(page - 1)} aria-label="Previous page">
+    <nav aria-label={t("films.pages")} className="flex items-center justify-center gap-1.5">
+      <button type="button" className={step} disabled={page <= 1} onClick={() => onPage(page - 1)} aria-label={t("films.prevPage")}>
         <ChevronLeft className="size-4" />
       </button>
       {pageList(page, pages).map((n, i) =>
@@ -92,7 +94,7 @@ function Pagination({ page, pages, onPage }: { page: number; pages: number; onPa
           </button>
         ),
       )}
-      <button type="button" className={step} disabled={page >= pages} onClick={() => onPage(page + 1)} aria-label="Next page">
+      <button type="button" className={step} disabled={page >= pages} onClick={() => onPage(page + 1)} aria-label={t("films.nextPage")}>
         <ChevronRight className="size-4" />
       </button>
     </nav>
@@ -126,6 +128,7 @@ function Row({ children, className }: { children: React.ReactNode; className?: s
 }
 
 export function FilmsPage({ films: all, loading, cast = [] }: { films: Film[]; loading: boolean; cast?: CastMember[] }) {
+  const t = useT();
   const [f, setF] = useState<Filters>(readUrl);
 
   const counts = useMemo(() => {
@@ -207,28 +210,33 @@ export function FilmsPage({ films: all, loading, cast = [] }: { films: Film[]; l
         <div>
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="text-xs uppercase tracking-wider text-muted-foreground">Explore</p>
-              <h1 className="mt-1 text-4xl font-semibold tracking-tight md:text-5xl">Stories to watch</h1>
+              <p className="text-xs uppercase tracking-wider text-muted-foreground">{t("nav.explore")}</p>
+              <h1 className="mt-1 text-4xl font-semibold tracking-tight md:text-5xl">{t("films.storiesToWatch")}</h1>
             </div>
             <AgentPromptButton />
           </div>
           <Tabs value={f.source} onValueChange={(v) => set("source", v as Source)} variant="segment" className="mt-4">
             <TabsList>
-              <TabsTrigger value="all">Everything</TabsTrigger>
-              {SHARING && <TabsTrigger value="community">Shared by people{counts.community ? ` · ${counts.community}` : ""}</TabsTrigger>}
-              <TabsTrigger value="mine">My stories{mineCount ? ` · ${mineCount}` : ""}</TabsTrigger>
+              <TabsTrigger value="all">{t("films.everything")}</TabsTrigger>
+              {SHARING && <TabsTrigger value="community">{t("films.sharedByPeople")}{counts.community ? ` · ${counts.community}` : ""}</TabsTrigger>}
+              <TabsTrigger value="mine">{t("films.myStories")}{mineCount ? ` · ${mineCount}` : ""}</TabsTrigger>
             </TabsList>
           </Tabs>
           <p className="mt-2 text-sm text-muted-foreground">
             {loading
-              ? "Loading the library…"
-              : `${films.length} films · ${facets.narrators.length} narrators · ${facets.langs.length} languages · ${Math.round(films.reduce((s, x) => s + x.duration, 0) / 60)} min of story`}
+              ? t("films.loadingLibrary")
+              : t("films.stats", {
+                  films: films.length,
+                  narrators: facets.narrators.length,
+                  languages: facets.langs.length,
+                  minutes: Math.round(films.reduce((s, x) => s + x.duration, 0) / 60),
+                })}
           </p>
         </div>
         <Input
           value={search}
           onChange={setSearch}
-          placeholder="Search by topic, narrator, language or a line from the script…"
+          placeholder={t("films.searchPlaceholder")}
           leftIcon={<Search className="size-4" />}
           className="w-full"
           classNames={{ field: "h-12" }}
@@ -237,12 +245,12 @@ export function FilmsPage({ films: all, loading, cast = [] }: { films: Film[]; l
 
       {facets.narrators.length > 1 && (
         <section>
-          <h2 className="mb-3 text-sm font-semibold tracking-tight">Narrators</h2>
+          <h2 className="mb-3 text-sm font-semibold tracking-tight">{t("films.narrators")}</h2>
           <Row className="gap-4 pt-1 pb-1">
             {facets.narrators.map((n) => {
               const on = f.narrator === n.id;
               return (
-                <button key={n.id} type="button" onClick={() => toggle("narrator", n.id)} aria-pressed={on} title={`${n.n} film${n.n === 1 ? "" : "s"}`} className="group flex w-16 shrink-0 flex-col items-center gap-1.5">
+                <button key={n.id} type="button" onClick={() => toggle("narrator", n.id)} aria-pressed={on} title={t("films.nFilms", { n: n.n })} className="group flex w-16 shrink-0 flex-col items-center gap-1.5">
                   <span
                     className={cn(
                       "size-16 overflow-hidden rounded-full bg-muted ring-2 ring-offset-2 ring-offset-background transition-all",
@@ -265,10 +273,10 @@ export function FilmsPage({ films: all, loading, cast = [] }: { films: Film[]; l
 
       {facets.langs.length > 1 && (
         <section>
-          <h2 className="mb-3 text-sm font-semibold tracking-tight">Watch in</h2>
+          <h2 className="mb-3 text-sm font-semibold tracking-tight">{t("films.watchIn")}</h2>
           <Row>
             <Pill active={f.lang === "any"} onClick={() => set("lang", "any")} count={films.length}>
-              All languages
+              {t("films.allLanguages")}
             </Pill>
             {facets.langs.map((l) => (
               <Pill key={l.id} active={f.lang === l.id} onClick={() => toggle("lang", l.id)} count={l.n}>
@@ -283,19 +291,19 @@ export function FilmsPage({ films: all, loading, cast = [] }: { films: Film[]; l
         <div className="flex flex-wrap items-center gap-2">
           <Tabs value={f.length} onValueChange={(v) => set("length", v)} variant="segment">
             <TabsList>
-              <TabsTrigger value="any">Any length</TabsTrigger>
-              <TabsTrigger value="short">Under 1½ min</TabsTrigger>
-              <TabsTrigger value="medium">1½–4 min</TabsTrigger>
-              <TabsTrigger value="long">4+ min</TabsTrigger>
+              <TabsTrigger value="any">{t("films.anyLength")}</TabsTrigger>
+              <TabsTrigger value="short">{t("films.under15")}</TabsTrigger>
+              <TabsTrigger value="medium">{t("films.mid15")}</TabsTrigger>
+              <TabsTrigger value="long">{t("films.over4")}</TabsTrigger>
             </TabsList>
           </Tabs>
           <div className="ml-auto flex flex-wrap items-center gap-2">
             <Select value={f.voice} onValueChange={(v) => set("voice", v)}>
               <SelectTrigger className="w-40">
-                <SelectValue placeholder="Voice" />
+                <SelectValue placeholder={t("films.voice")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="any">Any voice</SelectItem>
+                <SelectItem value="any">{t("films.anyVoice")}</SelectItem>
                 {facets.voices.map((v) => (
                   <SelectItem key={v.id} value={v.id} label={v.id.split(" - ")[0]}>
                     {v.id.split(" - ")[0]} <span className="text-muted-foreground">{v.n}</span>
@@ -305,12 +313,12 @@ export function FilmsPage({ films: all, loading, cast = [] }: { films: Film[]; l
             </Select>
             <Select value={f.sort} onValueChange={(v) => set("sort", v)}>
               <SelectTrigger className="w-32">
-                <SelectValue placeholder="Sort" />
+                <SelectValue placeholder={t("films.sort")} />
               </SelectTrigger>
               <SelectContent>
                 {Object.entries(SORTS).map(([k, s]) => (
                   <SelectItem key={k} value={k}>
-                    {s.label}
+                    {t(s.label)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -318,10 +326,10 @@ export function FilmsPage({ films: all, loading, cast = [] }: { films: Film[]; l
             <Tabs value={f.view} onValueChange={(v) => set("view", v as Filters["view"])} variant="segment">
               <TabsList>
                 <TabsTrigger value="grid">
-                  <LayoutGrid className="size-4" aria-label="Grid" />
+                  <LayoutGrid className="size-4" aria-label={t("films.grid")} />
                 </TabsTrigger>
                 <TabsTrigger value="list">
-                  <List className="size-4" aria-label="List" />
+                  <List className="size-4" aria-label={t("films.list")} />
                 </TabsTrigger>
               </TabsList>
             </Tabs>
@@ -344,12 +352,12 @@ export function FilmsPage({ films: all, loading, cast = [] }: { films: Film[]; l
 
       <div className="-mt-3 flex flex-wrap items-center justify-between gap-2 text-sm text-muted-foreground">
         <p>
-          {loading ? "…" : `${shown.length} film${shown.length === 1 ? "" : "s"} · ${totalMinutes} min`}
-          {pages > 1 && ` · page ${page} of ${pages}`}
+          {loading ? "…" : t("films.shownCount", { n: shown.length, minutes: totalMinutes })}
+          {pages > 1 && ` · ${t("films.pageOf", { page, pages })}`}
         </p>
         {active > 0 && (
           <button type="button" onClick={clear} className="inline-flex items-center gap-1 hover:text-foreground">
-            <X className="size-3.5" /> Clear {active} filter{active > 1 ? "s" : ""}
+            <X className="size-3.5" /> {t("films.clearFilter", { n: active })}
           </button>
         )}
       </div>
@@ -364,13 +372,13 @@ export function FilmsPage({ films: all, loading, cast = [] }: { films: Film[]; l
         <div className="flex flex-col items-center gap-3 rounded-3xl border border-dashed border-border-strong p-12 text-center">
           <p className="text-sm text-muted-foreground">
             {f.source === "mine" && !films.length
-              ? "Films you make or share in this browser show up here."
+              ? t("films.emptyMine")
               : f.source === "community" && !films.length
-                ? "No shared stories yet. Make one and share it to Explore."
-                : "No films match these filters."}
+                ? t("films.emptyShared")
+                : t("films.empty")}
           </p>
           <button type="button" onClick={clear} className="text-sm font-medium hover:underline">
-            Show all films
+            {t("films.showAll")}
           </button>
         </div>
       ) : (

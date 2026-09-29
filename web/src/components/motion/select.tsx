@@ -1,6 +1,7 @@
 "use client";
 
 import { Check, ChevronDown } from "lucide-react";
+import { getT } from "@/lib/i18n";
 import {
   motion,
   type Transition,
@@ -250,7 +251,7 @@ export function SelectValue({ placeholder, className }: SelectValueProps) {
     <span
       className={cn(label ? "text-foreground" : "text-muted-foreground", className)}
     >
-      {label ?? placeholder ?? "Select"}
+      {label ?? placeholder ?? getT()("motion.select")}
     </span>
   );
 }

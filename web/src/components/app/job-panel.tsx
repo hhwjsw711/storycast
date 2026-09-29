@@ -11,22 +11,23 @@ import { EASE_OUT } from "@/lib/ease";
 import { navigate } from "@/lib/router";
 import { SHARING } from "@/lib/share";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
 import { STAGES, clock, type Job, type JobEvent } from "@/lib/api";
 
 type Props = { job: Job; events: JobEvent[]; onResume?: () => void };
 
-function stageItems(job: Job, events: JobEvent[]): TodoItem[] {
+function stageItems(job: Job, events: JobEvent[], t: (key: string, params?: Record<string, string | number>) => string): TodoItem[] {
   const seen = new Set(events.map((e) => e.stage));
   const current = STAGES.findIndex(([k]) => k === job.stage);
   const reached = Math.max(current, ...STAGES.map(([k], i) => (seen.has(k) ? i : -1)));
-  return STAGES.map(([key, label], i) => {
+  return STAGES.map(([key], i) => {
     const last = [...events].reverse().find((e) => e.stage === key);
     let status: TodoItem["status"] = "pending";
     if (job.status === "done" || i < reached) status = "completed";
     else if (i === reached) status = job.status === "error" ? "cancelled" : "in-progress";
     return {
       id: key,
-      title: label,
+      title: t(`stage.${key}`),
       status,
       detail: status === "in-progress" && last ? <span className="block max-w-[11rem] truncate sm:max-w-[13rem]">{last.msg}</span> : undefined,
     };
@@ -34,12 +35,13 @@ function stageItems(job: Job, events: JobEvent[]): TodoItem[] {
 }
 
 function Placeholder({ planned, stage }: { planned: boolean; stage: string }) {
+  const t = useT();
   const frames = Array.from({ length: 6 });
   return (
     <>
       {!planned && (
         <div className="rounded-2xl border border-border bg-background/50 p-4">
-          <TextShimmer className="text-xs">The director is writing the script…</TextShimmer>
+          <TextShimmer className="text-xs">{t("job.directorWriting")}</TextShimmer>
           <div className="mt-4 flex flex-col gap-3">
             {[92, 78, 86, 64, 80].map((w, i) => (
               <div key={i} className="flex gap-3">
@@ -57,7 +59,7 @@ function Placeholder({ planned, stage }: { planned: boolean; stage: string }) {
           ))}
         </div>
         <p className="px-1 pt-2 text-xs text-muted-foreground">
-          {stage === "character" ? "Designing the character…" : stage === "keyframes" ? "Painting the keyframes…" : "Character sheet and keyframes will appear here"}
+          {stage === "character" ? t("job.designing") : stage === "keyframes" ? t("job.painting") : t("job.appearHere")}
         </p>
       </div>
     </>
@@ -65,6 +67,7 @@ function Placeholder({ planned, stage }: { planned: boolean; stage: string }) {
 }
 
 export function JobPanel({ job, events, onResume }: Props) {
+  const t = useT();
   const running = job.status === "running" || job.status === "queued";
   const [now, setNow] = useState(() => Date.now() / 1000);
   const [view, setView] = useState<number | null>(null);
@@ -105,11 +108,11 @@ export function JobPanel({ job, events, onResume }: Props) {
     >
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">{running ? "In production" : job.status === "done" ? "Latest film" : "Stopped"}</p>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">{running ? t("job.inProduction") : job.status === "done" ? t("job.latestFilm") : t("job.stopped")}</p>
           <h2 className="mt-1 truncate text-2xl font-medium tracking-tight">{plan ? `${plan.title} ${plan.subtitle}` : job.topic}</h2>
         </div>
         <AgentProgress
-          label={job.status === "done" ? "Finished" : job.status === "error" ? "Stopped" : (STAGES.find(([k]) => k === job.stage)?.[1] ?? "Queued")}
+          label={job.status === "done" ? t("job.finished") : job.status === "error" ? t("job.stopped") : (STAGES.find(([k]) => k === job.stage) ? t(`stage.${job.stage}`) : t("job.queued"))}
           elapsedSeconds={elapsed}
           running={running}
         />
@@ -140,10 +143,10 @@ export function JobPanel({ job, events, onResume }: Props) {
                     }
                   }}
                 >
-                  <Download className="size-4" /> {saving ? "Saving…" : "Download"}
+                  <Download className="size-4" /> {saving ? t("job.saving") : t("job.download")}
                 </Button>
                 <Button size="md" onClick={() => navigate(`/films/${job.id}`)}>
-                  <Share2 className="size-4" /> {SHARING ? "Watch & share" : "Open the film page"}
+                  <Share2 className="size-4" /> {SHARING ? t("job.watchShare") : "Open the film page"}
                 </Button>
               </div>
             </div>
@@ -156,7 +159,7 @@ export function JobPanel({ job, events, onResume }: Props) {
           <p className="min-w-0 flex-1">{job.error || last?.msg}</p>
           {job.resumable && onResume && (
             <Button size="sm" variant="outline" onClick={onResume}>
-              Resume from the last step
+              {t("job.resume")}
             </Button>
           )}
         </div>
@@ -164,7 +167,7 @@ export function JobPanel({ job, events, onResume }: Props) {
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,320px)_1fr]">
         <div className="flex min-w-0 flex-col gap-4">
-          <TodoList items={stageItems(job, events)} title="Pipeline" collapseOnComplete={false} maxHeight={420} />
+          <TodoList items={stageItems(job, events, t)} title={t("job.pipeline")} collapseOnComplete={false} maxHeight={420} />
           <div ref={logRef} className="max-h-64 overflow-y-auto rounded-2xl border border-border bg-background/50 p-3 font-mono text-[11.5px] leading-relaxed">
             {events.map((e, i) => (
               <div key={i} className={cn("flex gap-2", e.stage === "error" ? "text-destructive" : "text-muted-foreground")}>
@@ -184,7 +187,7 @@ export function JobPanel({ job, events, onResume }: Props) {
               className="rounded-2xl border border-border bg-background/50 p-4"
             >
               <p className="text-xs text-muted-foreground">
-                Script · narrated by <span className="text-foreground">{plan.character.name}</span>
+                {t("job.scriptNarrated", { name: plan.character.name })}
               </p>
               <ol className="mt-3 flex max-h-72 flex-col gap-2 overflow-y-auto pr-1 text-sm leading-relaxed">
                 {plan.blocks.map((b, i) => (

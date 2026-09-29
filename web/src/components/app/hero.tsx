@@ -7,6 +7,7 @@ import { Marquee } from "@/components/motion/marquee";
 import { TextReveal } from "@/components/motion/text-reveal";
 import { AgentPromptButton } from "@/components/app/agent-button";
 import { EASE_OUT } from "@/lib/ease";
+import { useT } from "@/lib/i18n";
 import type { CastMember, Film } from "@/lib/api";
 
 const ROWS = 5;
@@ -57,6 +58,7 @@ function PosterWall({ films }: { films: Film[] }) {
 }
 
 export function Hero({ cast, films }: { cast: CastMember[]; films: Film[] }) {
+  const t = useT();
   return (
     <>
       <section className="relative mx-[calc(50%-50vw)] flex min-h-[560px] items-center justify-center overflow-hidden sm:min-h-[680px]">
@@ -74,13 +76,13 @@ export function Hero({ cast, films }: { cast: CastMember[]; films: Film[] }) {
             className="gradient-ring mx-auto inline-flex items-center gap-2 rounded-full bg-card/80 px-4 py-2 text-sm backdrop-blur"
           >
             <Sparkles className="size-4 text-accent" />
-            <span className="font-medium">{cast.length} narrators ready to tell your story</span>
-            <span className="hidden text-muted-foreground sm:inline">· or invent your own</span>
+            <span className="font-medium">{t("hero.tagline", { n: cast.length })}</span>
+            <span className="hidden text-muted-foreground sm:inline">{t("hero.orInvent")}</span>
           </motion.div>
 
           <h1 className="mx-auto mt-6 max-w-3xl text-balance text-5xl font-medium tracking-tight md:text-6xl">
-            <TextReveal text="Type a topic." className="block" />
-            <TextReveal text="Get a story." className="block text-muted-foreground" delay={0.25} />
+            <TextReveal text={`${t("hero.typeTopic")} ${t("hero.aTopic")} ${t("hero.topic")}`} className="block" />
+            <TextReveal text={`${t("hero.get")} ${t("hero.a")} ${t("hero.story")}`} className="block text-muted-foreground" delay={0.25} />
           </h1>
 
           <motion.p
@@ -89,7 +91,7 @@ export function Hero({ cast, films }: { cast: CastMember[]; films: Film[] }) {
             transition={{ duration: 0.6, delay: 0.45, ease: EASE_OUT }}
             className="mx-auto mt-5 max-w-xl text-pretty text-base text-muted-foreground"
           >
-            Pick a character and give it a topic. It tells the story in its own voice, scene by scene, and you get back a finished animated story to watch and share.
+            {t("hero.subtitle")}
           </motion.p>
 
           <motion.div
@@ -99,10 +101,10 @@ export function Hero({ cast, films }: { cast: CastMember[]; films: Film[] }) {
             className="pointer-events-auto mt-8 flex flex-wrap items-center justify-center gap-3"
           >
             <Button size="lg" onClick={() => navigate("/create")}>
-              <Clapperboard className="size-4" /> Start a story
+              <Clapperboard className="size-4" /> {t("hero.startStory")}
             </Button>
             <Link to="/films" className="inline-flex h-12 items-center gap-2 rounded-full border border-border bg-background/70 px-6 text-sm backdrop-blur transition-colors hover:border-border-strong">
-              Browse stories <ArrowRight className="size-4" />
+              {t("hero.browse")} <ArrowRight className="size-4" />
             </Link>
           </motion.div>
           <motion.div

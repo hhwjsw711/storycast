@@ -2,6 +2,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Captions, Loader2, Maximize, Minimize, Pause, PictureInPicture2, Play, RotateCcw, Volume1, Volume2, VolumeX } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, type PointerEvent as RPointerEvent } from "react";
 import { EASE_OUT, SPRING_PRESS } from "@/lib/ease";
+import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 const SPEEDS = [1, 1.25, 1.5, 2, 0.75];
@@ -21,6 +22,7 @@ type Props = {
 };
 
 export function FilmPlayer({ src, cleanSrc, poster, autoPlay = false, className }: Props) {
+  const t = useT();
   const reduce = useReducedMotion();
   const root = useRef<HTMLDivElement>(null);
   const video = useRef<HTMLVideoElement>(null);
@@ -220,7 +222,7 @@ export function FilmPlayer({ src, cleanSrc, poster, autoPlay = false, className 
             exit={{ opacity: 0, scale: 1.1 }}
             whileTap={reduce ? undefined : { scale: 0.94 }}
             transition={SPRING_PRESS}
-            aria-label={ended ? "Replay" : "Play"}
+            aria-label={ended ? t("player.replay") : t("player.play")}
             className="absolute top-1/2 left-1/2 z-10 flex size-18 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/15 text-white shadow-2xl ring-1 ring-white/25 backdrop-blur-xl transition-colors hover:bg-white/25"
           >
             {ended ? <RotateCcw className="size-7" /> : <Play className="size-7 translate-x-0.5 fill-current" />}
@@ -265,7 +267,7 @@ export function FilmPlayer({ src, cleanSrc, poster, autoPlay = false, className 
         <div
           ref={bar}
           role="slider"
-          aria-label="Seek"
+          aria-label={t("player.seek")}
           aria-valuemin={0}
           aria-valuemax={Math.round(dur)}
           aria-valuenow={Math.round(time)}
@@ -295,12 +297,12 @@ export function FilmPlayer({ src, cleanSrc, poster, autoPlay = false, className 
         </div>
 
         <div className="mt-1 flex items-center gap-1 text-white">
-          <CtrlButton label={playing ? "Pause (k)" : "Play (k)"} onClick={toggle}>
+          <CtrlButton label={playing ? t("player.pauseK") : t("player.playK")} onClick={toggle}>
             {playing ? <Pause className="size-4.5 fill-current" /> : <Play className="size-4.5 translate-x-px fill-current" />}
           </CtrlButton>
 
           <div className="group/vol flex items-center">
-            <CtrlButton label={muted ? "Unmute (m)" : "Mute (m)"} onClick={() => setMuted((m) => !m)}>
+            <CtrlButton label={muted ? t("player.unmute") : t("player.mute")} onClick={() => setMuted((m) => !m)}>
               <VolIcon className="size-4.5" />
             </CtrlButton>
             <input
@@ -313,7 +315,7 @@ export function FilmPlayer({ src, cleanSrc, poster, autoPlay = false, className 
                 setVolume(Number(e.target.value));
                 setMuted(false);
               }}
-              aria-label="Volume"
+              aria-label={t("player.volume")}
               className="h-1 w-0 cursor-pointer appearance-none rounded-full bg-white/30 opacity-0 transition-all duration-200 group-hover/vol:ml-1 group-hover/vol:w-20 group-hover/vol:opacity-100 focus:ml-1 focus:w-20 focus:opacity-100 [&::-webkit-slider-thumb]:size-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
               style={{ background: `linear-gradient(to right, white ${(muted ? 0 : volume) * 100}%, rgb(255 255 255 / 0.3) 0)` }}
             />
@@ -325,24 +327,24 @@ export function FilmPlayer({ src, cleanSrc, poster, autoPlay = false, className 
 
           <div className="ml-auto flex items-center gap-1">
             {cleanSrc && (
-              <CtrlButton label={subs ? "Subtitles on (c)" : "Subtitles off (c)"} onClick={swapSubs} active={subs}>
+              <CtrlButton label={subs ? t("player.subtitles") : t("player.subtitlesOff")} onClick={swapSubs} active={subs}>
                 <Captions className="size-4.5" />
               </CtrlButton>
             )}
             <button
               type="button"
               onClick={() => setSpeed((s) => SPEEDS[(SPEEDS.indexOf(s) + 1) % SPEEDS.length])}
-              title="Playback speed"
+              title={t("player.playbackSpeed")}
               className="h-8 min-w-11 rounded-full px-2 font-mono text-xs text-white/90 transition-colors hover:bg-white/15"
             >
               {speed}×
             </button>
             {"pictureInPictureEnabled" in document && (
-              <CtrlButton label="Picture in picture" onClick={() => void video.current?.requestPictureInPicture?.().catch(() => {})}>
+              <CtrlButton label={t("player.pip")} onClick={() => void video.current?.requestPictureInPicture?.().catch(() => {})}>
                 <PictureInPicture2 className="size-4.5" />
               </CtrlButton>
             )}
-            <CtrlButton label={full ? "Exit full screen (f)" : "Full screen (f)"} onClick={fullscreen}>
+            <CtrlButton label={full ? "Exit full screen (f)" : t("player.fullscreen")} onClick={fullscreen}>
               {full ? <Minimize className="size-4.5" /> : <Maximize className="size-4.5" />}
             </CtrlButton>
           </div>

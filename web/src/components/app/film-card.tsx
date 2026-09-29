@@ -2,14 +2,16 @@ import { Languages, Play } from "lucide-react";
 import { useState } from "react";
 import { navigate } from "@/lib/router";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
 import { languageName, nativeLanguage, type Film } from "@/lib/api";
 
-export function fmtDuration(s: number) {
+export function fmtDuration(s: number, secWord = "s") {
   const m = Math.floor(s / 60);
-  return m ? `${m}:${String(Math.round(s % 60)).padStart(2, "0")}` : `${Math.round(s)} s`;
+  return m ? `${m}:${String(Math.round(s % 60)).padStart(2, "0")}` : `${Math.round(s)} ${secWord}`;
 }
 
 export function FilmCard({ film, layout = "grid" }: { film: Film; layout?: "grid" | "list" }) {
+  const t = useT();
   const [hover, setHover] = useState(false);
   const list = layout === "list";
   const to = `/films/${film.id}`;
@@ -33,7 +35,7 @@ export function FilmCard({ film, layout = "grid" }: { film: Film; layout?: "grid
         <span className="absolute top-2 left-2 inline-flex items-center gap-1 rounded-full bg-black/65 px-2 py-0.5 text-[11px] font-medium text-white backdrop-blur-sm">
           <Languages className="size-3" /> {nativeLanguage(film.lang)}
         </span>
-        <span className="absolute right-2 bottom-2 rounded-md bg-black/70 px-1.5 py-0.5 font-mono text-[11px] text-white">{fmtDuration(film.duration)}</span>
+        <span className="absolute right-2 bottom-2 rounded-md bg-black/70 px-1.5 py-0.5 font-mono text-[11px] text-white">{fmtDuration(film.duration, t("misc.seconds"))}</span>
         <span className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
           <span className="flex size-11 items-center justify-center rounded-full bg-background/80 backdrop-blur-md">
             <Play className="size-4 translate-x-px fill-current" />

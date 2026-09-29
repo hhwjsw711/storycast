@@ -2,6 +2,7 @@
 
 import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useState } from "react";
+import { getT } from "@/lib/i18n";
 import { EASE_IN_OUT } from "@/lib/ease";
 import { cn } from "@/lib/utils";
 
@@ -33,7 +34,7 @@ function formatElapsed(totalSeconds: number) {
 }
 
 export function AgentProgress({
-  label = "Churning",
+  label = getT()("todo.churning"),
   elapsedSeconds,
   initialSeconds = 0,
   running = true,

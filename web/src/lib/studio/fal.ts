@@ -1,4 +1,5 @@
 import { ApiError, fal } from "@fal-ai/client";
+import { getT } from "@/lib/i18n";
 
 const KEY = "storycast-fal-key";
 
@@ -140,7 +141,7 @@ async function follow<T>(app: string, requestId: string): Promise<T> {
 export async function run<T = any>(app: string, input: Record<string, unknown>, retries = 1): Promise<T> {
   if (!falKey()) {
     askForKey();
-    throw new FalError("Connect your fal key to make films", 401);
+    throw new FalError(getT()("misc.connectToMake"), 401);
   }
   let last: { message: string; status?: number } = { message: "" };
   for (let attempt = 0; attempt <= retries; attempt++) {
@@ -175,7 +176,7 @@ export async function duration(url: string): Promise<number> {
 export function upload(file: File): Promise<string> {
   if (!falKey()) {
     askForKey();
-    return Promise.reject(new FalError("Connect your fal key to upload images", 401));
+    return Promise.reject(new FalError(getT()("misc.connectToUpload"), 401));
   }
   return fal.storage.upload(file);
 }
