@@ -383,7 +383,7 @@ export function WatchPage({ id, films, cast, loading }: { id: string; films: Fil
             open={shareOpen}
             onClose={() => setShareOpen(false)}
             onChange={() => {
-              setTick((t) => t + 1);
+              setTick((n) => n + 1);
 
               if (film.community && !ownedFilm(film.id)) {
                 setShareOpen(false);

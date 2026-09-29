@@ -472,6 +472,7 @@ export const en: Record<string, string> = {
   "misc.loadingData": "Could not load the studio data",
   "misc.sharingFailed": "sharing failed ({status})",
   "misc.seconds": "s",
+  "misc.minutes": "m",
 
   // Motion components
   "motion.searchOptions": "Search options",

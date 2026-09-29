@@ -121,8 +121,8 @@ export function VoiceLibrary({ open, onOpenChange, lang, topic, selected, onSele
   }, [open, facets, stopPlayer]);
 
   useEffect(() => {
-    const t = setTimeout(() => setQ((prev) => (prev.search === search ? prev : { ...prev, search })), 250);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => setQ((prev) => (prev.search === search ? prev : { ...prev, search })), 250);
+    return () => clearTimeout(timer);
   }, [search]);
 
   const fetchPage = useCallback(async (query: VoiceQuery, p: number) => {
@@ -161,9 +161,9 @@ export function VoiceLibrary({ open, onOpenChange, lang, topic, selected, onSele
   const tagList = useMemo(() => {
     const tags = facets?.tags ?? [];
     const needle = tagSearch.toLowerCase().trim();
-    const hits = needle ? tags.filter((t) => t.tag.includes(needle)) : tags;
-    const chosen = hits.filter((t) => q.tags.includes(t.tag));
-    const rest = hits.filter((t) => !q.tags.includes(t.tag));
+    const hits = needle ? tags.filter((tag) => tag.tag.includes(needle)) : tags;
+    const chosen = hits.filter((tag) => q.tags.includes(tag.tag));
+    const rest = hits.filter((tag) => !q.tags.includes(tag.tag));
     return [...chosen, ...(allTags || needle ? rest : rest.slice(0, TAG_LIMIT))];
   }, [facets, tagSearch, q.tags, allTags]);
 
@@ -172,7 +172,7 @@ export function VoiceLibrary({ open, onOpenChange, lang, topic, selected, onSele
     setQ((prev) => ({ ...prev, [k]: v }));
   }
   function toggleTag(tag: string) {
-    set("tags", q.tags.includes(tag) ? q.tags.filter((t) => t !== tag) : [...q.tags, tag]);
+    set("tags", q.tags.includes(tag) ? q.tags.filter((x) => x !== tag) : [...q.tags, tag]);
   }
   function applyPreset(id: string) {
     const p = PRESET_KEYS.find((x) => x.id === id);
@@ -343,9 +343,9 @@ export function VoiceLibrary({ open, onOpenChange, lang, topic, selected, onSele
                       {q.tags.length > 1 && <span className="text-[11px] text-muted-foreground">{t("voice.tagsAllMatch")}</span>}
                     </div>
                     <div className="flex flex-wrap gap-1.5">
-                      {tagList.map((t) => (
-                        <Chip key={t.tag} active={q.tags.includes(t.tag)} onClick={() => toggleTag(t.tag)} count={t.count}>
-                          {pretty(t.tag)}
+                      {tagList.map((tag) => (
+                        <Chip key={tag.tag} active={q.tags.includes(tag.tag)} onClick={() => toggleTag(tag.tag)} count={tag.count}>
+                          {pretty(tag.tag)}
                         </Chip>
                       ))}
                       {!tagSearch && (facets?.tags.length ?? 0) > TAG_LIMIT && (

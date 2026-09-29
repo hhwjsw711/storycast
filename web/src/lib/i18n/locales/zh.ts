@@ -472,6 +472,7 @@ export const zh: Record<string, string> = {
   "misc.loadingData": "无法加载工作室数据",
   "misc.sharingFailed": "分享失败 ({status})",
   "misc.seconds": "秒",
+  "misc.minutes": "分",
 
   // Motion components
   "motion.searchOptions": "搜索选项",

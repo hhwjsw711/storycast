@@ -69,10 +69,10 @@ export function FilmPlayer({ src, cleanSrc, poster, autoPlay = false, className 
     }
   }, []);
 
-  const seek = useCallback((t: number) => {
+  const seek = useCallback((time: number) => {
     const v = video.current;
     if (!v || !Number.isFinite(v.duration)) return;
-    v.currentTime = Math.min(Math.max(0, t), v.duration);
+    v.currentTime = Math.min(Math.max(0, time), v.duration);
     setTime(v.currentTime);
   }, []);
 

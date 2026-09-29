@@ -26,11 +26,11 @@ export interface AgentProgressProps {
   className?: string;
 }
 
-function formatElapsed(totalSeconds: number) {
+function formatElapsed(totalSeconds: number, t: (key: string, params?: Record<string, string | number>) => string) {
   const safeSeconds = Math.max(0, totalSeconds);
   const minutes = Math.floor(safeSeconds / 60);
   const seconds = (safeSeconds % 60).toFixed(1);
-  return minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+  return minutes > 0 ? `${minutes}${t("misc.minutes")} ${seconds}${t("misc.seconds")}` : `${seconds}${t("misc.seconds")}`;
 }
 
 export function AgentProgress({
@@ -97,7 +97,7 @@ export function AgentProgress({
         aria-hidden="true"
         className="tabular-nums text-muted-foreground/70"
       >
-        {formatElapsed(elapsed)}
+        {formatElapsed(elapsed, t)}
       </span>
     </span>
   );

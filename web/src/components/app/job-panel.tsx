@@ -76,8 +76,8 @@ export function JobPanel({ job, events, onResume }: Props) {
 
   useEffect(() => {
     if (!running) return;
-    const t = setInterval(() => setNow(Date.now() / 1000), 250);
-    return () => clearInterval(t);
+    const timer = setInterval(() => setNow(Date.now() / 1000), 250);
+    return () => clearInterval(timer);
   }, [running]);
 
   useEffect(() => {
@@ -128,7 +128,7 @@ export function JobPanel({ job, events, onResume }: Props) {
           >
             <FilmPlayer src={job.result.video} cleanSrc={job.result.clean} poster={job.result.poster} className="mt-6 border border-border" />
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-              <p className="text-sm text-muted-foreground">{job.result.duration} s · {t("job.storedOnFal")}</p>
+              <p className="text-sm text-muted-foreground">{job.result.duration} {t("misc.seconds")} · {t("job.storedOnFal")}</p>
               <div className="flex flex-wrap gap-2">
                 <Button
                   variant="secondary"
