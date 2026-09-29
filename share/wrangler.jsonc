@@ -4,6 +4,10 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-09-01",
   "observability": { "enabled": true },
+  "routes": [
+    { "pattern": "memegineer.com/api/*", "zone_name": "memegineer.com" },
+    { "pattern": "memegineer.com/m/*", "zone_name": "memegineer.com" }
+  ],
   "vars": {
     "ALLOWED_ORIGINS": "https://memegineer.com"
   },
