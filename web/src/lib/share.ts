@@ -1,4 +1,5 @@
 import type { Film } from "@/lib/api";
+import { getT } from "@/lib/i18n";
 
 export const SHARE_API =
   (import.meta.env.VITE_SHARE_API as string | undefined)?.replace(/\/$/, "") || "";
@@ -48,7 +49,7 @@ export class ShareError extends Error {
 async function call<T>(path: string, init: RequestInit = {}): Promise<T> {
   const r = await fetch(`${SHARE_API}${path}`, { ...init, headers: { "content-type": "application/json", ...(init.headers || {}) } });
   const d = (await r.json().catch(() => ({}))) as Record<string, unknown>;
-  if (!r.ok) throw new ShareError(String(d.error || `sharing failed (${r.status})`), r.status, d);
+  if (!r.ok) throw new ShareError(String(d.error || getT()("error.sharingFailed", { status: r.status })), r.status, d);
   return d as T;
 }
 
@@ -89,7 +90,7 @@ export async function shareFilm(film: Film, visibility: Visibility, turnstile: s
 
 export async function setVisibility(id: string, visibility: Visibility) {
   const o = readOwned()[id];
-  if (!o) throw new Error("this browser did not share that film");
+  if (!o) throw new Error(getT()("error.notShared"));
   const r = await call<{ status: ShareStatus }>(`/api/films/${id}`, { method: "PATCH", headers: { authorization: `Owner ${o.owner}` }, body: JSON.stringify({ visibility }) });
   const all = readOwned();
   all[id] = { ...o, status: r.status };
@@ -99,7 +100,7 @@ export async function setVisibility(id: string, visibility: Visibility) {
 
 export async function unshare(id: string) {
   const o = readOwned()[id];
-  if (!o) throw new Error("this browser did not share that film");
+  if (!o) throw new Error(getT()("error.notShared"));
   await call(`/api/films/${id}`, { method: "DELETE", headers: { authorization: `Owner ${o.owner}` } });
   const all = readOwned();
   delete all[id];

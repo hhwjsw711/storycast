@@ -5,7 +5,7 @@ import { downloadFile } from "@/components/app/lightbox";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/motion/button/base";
 import { EASE_OUT } from "@/lib/ease";
-import { useT } from "@/lib/i18n";
+import { useT, getT } from "@/lib/i18n";
 import { navigate } from "@/lib/router";
 import { cn } from "@/lib/utils";
 import type { Film } from "@/lib/api";
@@ -24,12 +24,13 @@ declare global {
 
 let turnstileScript: Promise<void> | null = null;
 function loadTurnstile() {
+  const t = getT();
   turnstileScript ??= new Promise((resolve, reject) => {
     const s = document.createElement("script");
     s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
     s.async = true;
     s.onload = () => resolve();
-    s.onerror = () => reject(new Error("could not load the bot check"));
+    s.onerror = () => reject(new Error(t("error.botCheckLoad")));
     document.head.append(s);
   });
   return turnstileScript;

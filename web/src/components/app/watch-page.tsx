@@ -18,20 +18,20 @@ import { SHARING, ShareError, countView, isSharedId, ownedFilm, report, sharedCo
 
 const STAGE_KEYS = new Set<string>(STAGES.map(([k]) => k));
 
-const CREDITS = (voice: string) => [
-  { role: "Story & direction", who: "Claude Opus 5.5", note: "script, shot plan and a second editing pass for flow" },
-  { role: "Characters & keyframes", who: "GPT Image 2.5", note: "model sheet, portrait and one painted frame per scene" },
-  { role: "Animation", who: "MiniMax H3 Max", note: "reference-to-video shots and lip-synced talking shots, 768p" },
-  { role: "Narration", who: "ElevenLabs v3", note: voice ? `voice: ${voice}` : "Voice Library voice" },
-  { role: "Score", who: "ElevenLabs Music", note: "instrumental, written for this film" },
-  { role: "Edit, mix & subtitles", who: "fal ffmpeg-api · workflow-utilities", note: "trim, merge, compose, loudness, word-by-word captions" },
+const CREDITS = (voice: string, t: (key: string, params?: Record<string, string | number>) => string) => [
+  { role: t("watch.roleStoryDirection"), who: "Claude Opus 5.5", note: t("watch.noteStoryDirection") },
+  { role: t("watch.roleCharacters"), who: "GPT Image 2.5", note: t("watch.noteCharacters") },
+  { role: t("watch.roleAnimation"), who: "MiniMax H3 Max", note: t("watch.noteAnimation") },
+  { role: t("watch.roleNarration"), who: "ElevenLabs v3", note: voice ? `${t("watch.voice")}: ${voice}` : t("watch.voiceLibraryVoice") },
+  { role: t("watch.roleScore"), who: "ElevenLabs Music", note: t("watch.noteScore") },
+  { role: t("watch.roleEdit"), who: "fal ffmpeg-api · workflow-utilities", note: t("watch.noteEdit") },
 ];
 
 const ago = (created: number, t: (key: string, params?: Record<string, string | number>) => string) => {
   const d = Math.max(0, Date.now() / 1000 - created);
   if (d < 3600) return t("watch.nMinAgo", { n: Math.max(1, Math.round(d / 60)) });
-  if (d < 86400) return `${Math.round(d / 3600)} h ago`;
-  return new Date(created * 1000).toLocaleDateString("en", { day: "numeric", month: "short", year: "numeric" });
+  if (d < 86400) return t("watch.nHoursAgo", { n: Math.round(d / 3600) });
+  return new Date(created * 1000).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
 };
 
 const Quote = ({ className }: { className?: string }) => (
@@ -41,6 +41,7 @@ const Quote = ({ className }: { className?: string }) => (
 );
 
 function StoryCard({ film }: { film: Film }) {
+  const t = useT();
   return (
     <Link to={`/films/${film.id}`} className="group flex min-w-0 flex-col gap-2">
       <div className="relative aspect-video overflow-hidden rounded-xl bg-black ring-1 ring-border">
@@ -48,7 +49,7 @@ function StoryCard({ film }: { film: Film }) {
           <img src={film.thumb || film.poster!} alt="" loading="lazy" className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" />
         )}
         <span className="absolute top-1.5 left-1.5 rounded-full bg-black/65 px-1.5 py-px text-[10px] font-medium text-white backdrop-blur-sm">{nativeLanguage(film.lang)}</span>
-        <span className="absolute right-1.5 bottom-1.5 rounded bg-black/70 px-1 py-px font-mono text-[10px] text-white">{fmtDuration(film.duration)}</span>
+        <span className="absolute right-1.5 bottom-1.5 rounded bg-black/70 px-1 py-px font-mono text-[10px] text-white">{fmtDuration(film.duration, t("misc.seconds"))}</span>
       </div>
       <p className="line-clamp-2 text-[13px] leading-snug">
         <span className="font-medium">{film.title}</span> <span className="text-muted-foreground">{film.subtitle}</span>
@@ -64,7 +65,7 @@ function ReportButton({ id }: { id: string }) {
   if (sent) return <span className="self-center text-xs text-muted-foreground">{t("watch.thanksReported")}</span>;
   return (
     <div className="relative">
-      <Button variant="ghost" size="icon" className="rounded-full border border-border" aria-label="Report" onClick={() => setOpen((o) => !o)}>
+      <Button variant="ghost" size="icon" className="rounded-full border border-border" aria-label={t("watch.reportAria")} onClick={() => setOpen((o) => !o)}>
         <Flag className="size-4" />
       </Button>
       {open && (
@@ -142,7 +143,7 @@ export function WatchPage({ id, films, cast, loading }: { id: string; films: Fil
   }, [film, films]);
 
   const stageLabel = (stage: string) =>
-    stage === "done" ? "Done" : STAGE_KEYS.has(stage) ? t(`stage.${stage}`) : stage;
+    stage === "done" ? t("job.finished") : STAGE_KEYS.has(stage) ? t(`stage.${stage}`) : stage;
 
   if (!film) {
     return loading || waiting ? (
@@ -158,11 +159,11 @@ export function WatchPage({ id, films, cast, loading }: { id: string; films: Fil
       <div className="flex flex-col items-center gap-4 py-24 text-center">
         <FilmIcon className="size-8 text-muted-foreground" />
         <p className="text-lg font-medium">
-          {remote?.code === "in_review" ? "This story is waiting for review" : isSharedId(id) ? "This story is no longer shared" : "This film is not in the library"}
+          {remote?.code === "in_review" ? t("watch.inReviewState") : isSharedId(id) ? t("watch.noLongerShared") : t("watch.notInLibrary")}
         </p>
-        {remote?.code === "in_review" && <p className="-mt-2 text-sm text-muted-foreground">It can be watched as soon as it has been approved.</p>}
+        {remote?.code === "in_review" && <p className="-mt-2 text-sm text-muted-foreground">{t("watch.inReviewNote")}</p>}
         <Button variant="secondary" onClick={() => navigate("/films")}>
-          <ArrowLeft className="size-4" /> Back to all films
+          <ArrowLeft className="size-4" /> {t("watch.backToFilms")}
         </Button>
       </div>
     );
@@ -170,7 +171,7 @@ export function WatchPage({ id, films, cast, loading }: { id: string; films: Fil
 
   const talk = film.kinds.filter((k) => k === "T").length;
   const made = film.events.length ? film.events[film.events.length - 1].t : 0;
-  const items: LightboxItem[] = film.keyframes.map((k, i) => ({ url: k, kind: "image" as const, caption: `Keyframe ${i + 1}` }));
+  const items: LightboxItem[] = film.keyframes.map((k, i) => ({ url: k, kind: "image" as const, caption: t("watch.keyframeN", { n: i + 1 }) }));
   const firstName = narrator?.name.split(" ").pop();
   const voice = film.voice.split(" - ")[0];
   const mineShared = film.mine ? sharedCopy(film.id) : film.community ? ownedFilm(film.id) : null;
@@ -197,7 +198,7 @@ export function WatchPage({ id, films, cast, loading }: { id: string; films: Fil
             <div className="flex flex-wrap items-center gap-2 text-xs">
               <Link
                 to={`/films?lang=${film.lang}`}
-                title={`All films in ${languageName(film.lang)}`}
+                title={t("watch.allFilmsInLang", { lang: languageName(film.lang) })}
                 className="inline-flex items-center gap-1.5 rounded-full bg-primary/15 px-2.5 py-1 font-medium text-primary transition-colors hover:bg-primary/25"
               >
                 <Languages className="size-3.5" /> {nativeLanguage(film.lang)}
@@ -205,12 +206,12 @@ export function WatchPage({ id, films, cast, loading }: { id: string; films: Fil
               </Link>
               <Link
                 to={`/films?style=${film.style}`}
-                title={`All ${film.style_label} films`}
+                title={t("watch.allStyleFilms", { style: film.style_label })}
                 className="rounded-full border border-border px-2.5 py-1 text-muted-foreground transition-colors hover:border-border-strong hover:text-foreground"
               >
                 {film.style_label}
               </Link>
-              <span className="font-mono text-muted-foreground">{fmtDuration(film.duration)}</span>
+              <span className="font-mono text-muted-foreground">{fmtDuration(film.duration, t("misc.seconds"))}</span>
               <span className="text-muted-foreground">· {ago(film.created, t)}</span>
               {film.community && (
                 <span className="inline-flex items-center gap-1 text-muted-foreground">
@@ -229,7 +230,7 @@ export function WatchPage({ id, films, cast, loading }: { id: string; films: Fil
             <AgentPromptButton />
             {canShare && (
               <Button className="rounded-full" onClick={() => setShareOpen(true)}>
-                <Share2 className="size-4" /> {mineShared ? "Shared" : t("watch.share")}
+                <Share2 className="size-4" /> {mineShared ? t("watch.shared") : t("watch.share")}
               </Button>
             )}
             {film.community && !mineShared && <ReportButton id={film.id} />}
@@ -238,7 +239,7 @@ export function WatchPage({ id, films, cast, loading }: { id: string; films: Fil
               variant="ghost"
               size="icon"
               className="rounded-full border border-border"
-              aria-label="Copy link"
+              aria-label={t("watch.copyLinkAria")}
               onClick={async () => {
                 await navigator.clipboard?.writeText(window.location.href).catch(() => {});
                 setCopied(true);
@@ -251,7 +252,7 @@ export function WatchPage({ id, films, cast, loading }: { id: string; films: Fil
               variant="ghost"
               size="icon"
               className="rounded-full border border-border"
-              aria-label="Download"
+              aria-label={t("watch.downloadAria")}
               disabled={saving}
               onClick={async () => {
                 setSaving(true);
@@ -278,13 +279,13 @@ export function WatchPage({ id, films, cast, loading }: { id: string; films: Fil
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-[11px] uppercase tracking-wider text-muted-foreground">{t("watch.narratedBy")}</p>
-            <p className="mt-0.5 text-lg font-semibold tracking-tight">{film.narrator || "An original narrator"}</p>
+            <p className="mt-0.5 text-lg font-semibold tracking-tight">{film.narrator || t("watch.originalNarrator")}</p>
             {narrator?.personality && <p className="text-sm text-muted-foreground">{narrator.personality}</p>}
-            {voice && <p className="mt-1 text-xs text-muted-foreground">Voice · {voice}</p>}
+            {voice && <p className="mt-1 text-xs text-muted-foreground">{t("watch.voice")} · {voice}</p>}
           </div>
           {narrator && (
             <Button className="shrink-0 rounded-full sm:mr-2" onClick={() => navigate(`/create?character=${narrator.id}`)}>
-              <Sparkles className="size-4" /> New film with {firstName}
+              <Sparkles className="size-4" /> {t("watch.newFilmWith", { name: firstName ?? narrator.name })}
             </Button>
           )}
         </section>
@@ -321,7 +322,7 @@ export function WatchPage({ id, films, cast, loading }: { id: string; films: Fil
               [t("watch.scenes"), film.script.length + 1],
               [t("watch.onCameraStat"), talk],
               [t("watch.voiceOver"), film.script.length - talk],
-              [t("watch.madeIn"), made ? `${Math.max(1, Math.round(made / 60))} min` : "–"],
+               [t("watch.madeIn"), made ? t("watch.nMin", { n: Math.max(1, Math.round(made / 60)) }) : "–"],
             ].map(([k, v]) => (
               <div key={k}>
                 <dt className="text-[11px] uppercase tracking-wider text-muted-foreground">{k}</dt>
@@ -333,7 +334,7 @@ export function WatchPage({ id, films, cast, loading }: { id: string; films: Fil
           {film.keyframes.length > 0 && (
             <div className="scrollbar-hide -mx-1 mt-6 flex gap-2 overflow-x-auto px-1 pb-1">
               {film.keyframes.map((k, i) => (
-                <button key={k} type="button" onClick={() => setView(i)} aria-label={`Keyframe ${i + 1}`} className="w-36 shrink-0 overflow-hidden rounded-xl ring-1 ring-border">
+                <button key={k} type="button" onClick={() => setView(i)} aria-label={t("watch.keyframeN", { n: i + 1 })} className="w-36 shrink-0 overflow-hidden rounded-xl ring-1 ring-border">
                   <img src={k} alt="" loading="lazy" className="aspect-video w-full object-cover transition-transform duration-300 hover:scale-105" />
                 </button>
               ))}
@@ -343,7 +344,7 @@ export function WatchPage({ id, films, cast, loading }: { id: string; films: Fil
           <div className="mt-7">
             <p className="text-[11px] uppercase tracking-wider text-muted-foreground">{t("watch.credits")}</p>
             <dl className="mt-3 divide-y divide-border">
-              {CREDITS(voice).map((c) => (
+              {CREDITS(voice, t).map((c) => (
                 <div key={c.role} className="grid gap-x-6 gap-y-0.5 py-2.5 sm:grid-cols-[11rem_1fr]">
                   <dt className="text-sm text-muted-foreground">{c.role}</dt>
                   <dd className="text-sm">
@@ -358,7 +359,7 @@ export function WatchPage({ id, films, cast, loading }: { id: string; films: Fil
           {film.events.length > 0 && (
             <div className="mt-6">
               <button type="button" onClick={() => setLog((l) => !l)} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-                {log ? "Hide the production log" : "Show the production log"} <ChevronDown className={cn("size-4 transition-transform", log && "rotate-180")} />
+                {log ? t("watch.hideLog") : t("watch.showLog")} <ChevronDown className={cn("size-4 transition-transform", log && "rotate-180")} />
               </button>
               {log && (
                 <ol className="mt-3 flex flex-col gap-1.5">

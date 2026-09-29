@@ -16,18 +16,18 @@ import { api, type Voice, type VoiceFacets, type VoiceQuery } from "@/lib/api";
 
 const EMPTY: VoiceQuery = { search: "", gender: "", age: "", accent: "", category: "", language: "", sort: "popular", curated: false, tags: [] };
 
-const PRESETS: { id: string; label: string; q: Partial<VoiceQuery> }[] = [
-  { id: "story", label: "Storyteller", q: { tags: ["storyteller"] } },
-  { id: "kids", label: "Kids & cartoon", q: { tags: ["cartoon"] } },
-  { id: "doc", label: "Documentary", q: { tags: ["documentary-narrator"] } },
-  { id: "grandma", label: "Grandma", q: { tags: ["grandma"] } },
-  { id: "grandpa", label: "Grandpa", q: { tags: ["grandpa"] } },
-  { id: "calm", label: "Calm & soothing", q: { tags: ["calm"] } },
-  { id: "warm", label: "Warm", q: { tags: ["warm"] } },
-  { id: "teacher", label: "Teacher", q: { tags: ["teacher"] } },
-  { id: "epic", label: "Epic trailer", q: { tags: ["movie-trailer"] } },
-  { id: "funny", label: "Funny", q: { tags: ["funny"] } },
-  { id: "mysterious", label: "Mysterious", q: { tags: ["mysterious"] } },
+const PRESET_KEYS: { id: string; key: string; q: Partial<VoiceQuery> }[] = [
+  { id: "story", key: "voice.presetStoryteller", q: { tags: ["storyteller"] } },
+  { id: "kids", key: "voice.presetKids", q: { tags: ["cartoon"] } },
+  { id: "doc", key: "voice.presetDocumentary", q: { tags: ["documentary-narrator"] } },
+  { id: "grandma", key: "voice.presetGrandma", q: { tags: ["grandma"] } },
+  { id: "grandpa", key: "voice.presetGrandpa", q: { tags: ["grandpa"] } },
+  { id: "calm", key: "voice.presetCalm", q: { tags: ["calm"] } },
+  { id: "warm", key: "voice.presetWarm", q: { tags: ["warm"] } },
+  { id: "teacher", key: "voice.presetTeacher", q: { tags: ["teacher"] } },
+  { id: "epic", key: "voice.presetEpic", q: { tags: ["movie-trailer"] } },
+  { id: "funny", key: "voice.presetFunny", q: { tags: ["funny"] } },
+  { id: "mysterious", key: "voice.presetMysterious", q: { tags: ["mysterious"] } },
 ];
 
 const SORTS: Record<string, string> = { popular: "voice.sortPopular", curated: "voice.sortCurated", name: "voice.sortAz" };
@@ -175,7 +175,7 @@ export function VoiceLibrary({ open, onOpenChange, lang, topic, selected, onSele
     set("tags", q.tags.includes(tag) ? q.tags.filter((t) => t !== tag) : [...q.tags, tag]);
   }
   function applyPreset(id: string) {
-    const p = PRESETS.find((x) => x.id === id);
+    const p = PRESET_KEYS.find((x) => x.id === id);
     if (!p || preset === id) {
       setPreset(null);
       setQ({ ...EMPTY, sort: q.sort });
@@ -220,7 +220,7 @@ export function VoiceLibrary({ open, onOpenChange, lang, topic, selected, onSele
               <p className="mt-0.5 text-xs text-muted-foreground">
                 {favOnly
                   ? t("voice.favCount", { n: shown.length })
-                  : t("voice.count", { shown: total.toLocaleString("en"), total: (facets?.total ?? 0).toLocaleString("en") })}
+                  : t("voice.count", { shown: total.toLocaleString(), total: (facets?.total ?? 0).toLocaleString() })}
               </p>
             </div>
             <button type="button" onClick={() => onOpenChange(false)} aria-label={t("motion.close")} className="flex size-9 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground">
@@ -237,9 +237,9 @@ export function VoiceLibrary({ open, onOpenChange, lang, topic, selected, onSele
           </div>
 
           <div className="-mx-5 mt-3 flex gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none]">
-            {PRESETS.map((p) => (
+            {PRESET_KEYS.map((p) => (
               <Chip key={p.id} active={preset === p.id} onClick={() => applyPreset(p.id)}>
-                {p.label}
+                {t(p.key)}
               </Chip>
             ))}
           </div>

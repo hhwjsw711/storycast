@@ -5,6 +5,7 @@ import { useTheme } from "next-themes";
 import { useReducedMotion } from "motion/react";
 import { useEffect, useState, type ComponentPropsWithoutRef } from "react";
 import { ActionSwapIcon } from "@/components/motion/action-swap";
+import { useT } from "@/lib/i18n";
 import { EASE_OUT_CSS } from "@/lib/ease";
 import { cn } from "@/lib/utils";
 
@@ -165,11 +166,12 @@ export function ThemeToggle({
   ...rest
 }: ThemeToggleProps) {
   const { isDark, mounted, toggle } = useThemeToggle({ variant, start });
+  const t = useT();
 
   return (
     <button
       type="button"
-      aria-label={mounted && isDark ? "Switch to light mode" : "Switch to dark mode"}
+      aria-label={mounted && isDark ? t("header.switchLight") : t("header.switchDark")}
       onClick={toggle}
       className={cn("flex items-center justify-center", className)}
       {...rest}

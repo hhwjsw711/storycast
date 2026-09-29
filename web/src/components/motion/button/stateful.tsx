@@ -14,6 +14,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { useT } from "@/lib/i18n";
 import { EASE_OUT, SPRING_SWAP } from "@/lib/ease";
 import { Button, type ButtonProps } from "./base";
 
@@ -172,23 +173,27 @@ export const StatefulButton = forwardRef<HTMLButtonElement, StatefulButtonProps>
   {
     state = "idle",
     children,
-    loadingText = "Loading",
-    successText = "Done",
-    errorText = "Try again",
+    loadingText,
+    successText,
+    errorText,
     icon,
     disabled,
     ...rest
   },
   ref,
 ) {
+  const t = useT();
+  const resolvedLoading = loadingText ?? t("button.loading");
+  const resolvedSuccess = successText ?? t("button.done");
+  const resolvedError = errorText ?? t("button.tryAgain");
   const isBusy = state === "loading";
   const stateText =
     state === "loading"
-      ? loadingText
+      ? resolvedLoading
       : state === "success"
-        ? successText
+        ? resolvedSuccess
         : state === "error"
-        ? errorText
+        ? resolvedError
         : children;
   const textKey =
     typeof stateText === "string" ? `${state}-${stateText}` : state;

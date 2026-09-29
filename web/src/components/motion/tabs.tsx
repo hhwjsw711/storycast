@@ -14,6 +14,7 @@ import {
   type ReactNode,
 } from "react";
 import { EASE_OUT } from "@/lib/ease";
+import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 type Variant = "pill" | "underline" | "segment";
@@ -99,6 +100,7 @@ export function TabsList({
   wrapperClassName?: string;
 }) {
   const { variant, value } = useTabs();
+  const t = useT();
   const reduce = useReducedMotion();
   const rootRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -212,7 +214,7 @@ export function TabsList({
   return (
     <div ref={rootRef} className={cn("relative isolate flex w-full max-w-full min-w-0 items-center", edges.overflow && surfaceClass, wrapperClassName)}>
       {edges.overflow && (
-        <button type="button" aria-label="Scroll tabs left" aria-controls={viewportId} disabled={!edges.left} onClick={() => scroll(-1)} className={cn(controlClass, "left-0 rounded-l-full")}>
+        <button type="button" aria-label={t("motion.scrollLeft")} aria-controls={viewportId} disabled={!edges.left} onClick={() => scroll(-1)} className={cn(controlClass, "left-0 rounded-l-full")}>
           <ChevronLeft size={20} aria-hidden="true" />
         </button>
       )}
@@ -239,7 +241,7 @@ export function TabsList({
         <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 rounded-r-[inherit] backdrop-blur-[2px] [mask-image:linear-gradient(to_left,black,transparent)]" />
       )}
       {edges.overflow && (
-        <button type="button" aria-label="Scroll tabs right" aria-controls={viewportId} disabled={!edges.right} onClick={() => scroll(1)} className={cn(controlClass, "right-0 rounded-r-full")}>
+        <button type="button" aria-label={t("motion.scrollRight")} aria-controls={viewportId} disabled={!edges.right} onClick={() => scroll(1)} className={cn(controlClass, "right-0 rounded-r-full")}>
           <ChevronRight size={20} aria-hidden="true" />
         </button>
       )}

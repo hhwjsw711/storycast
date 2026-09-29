@@ -256,7 +256,7 @@ export class Film {
       const d = await director.describeStyle(j.style_url);
       this.style = this.st.style = {
         id: "custom",
-        label: d.label || "Custom style",
+        label: d.label || getT()("error.customStyle"),
         thumb: "",
         category: "",
         blurb: "",
@@ -728,7 +728,7 @@ export function runFilm(rec: FilmRecord, onEvent: (e: JobEvent, rec: FilmRecord)
     } catch (e) {
       rec.status = "error";
       rec.error = String(e instanceof Error ? e.message : e).slice(0, 2000);
-      film.log("error", `Failed: ${rec.error.slice(0, 500)}`);
+      film.log("error", getT()("error.failed", { msg: rec.error.slice(0, 500) }));
     } finally {
       await film.checkpoint();
       await saveRecord(film.record());

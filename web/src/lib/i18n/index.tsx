@@ -18,8 +18,11 @@ function detect(): Locale {
     const saved = localStorage.getItem(STORAGE_KEY) as Locale | null;
     if (saved && saved in MESSAGES) return saved;
   } catch {}
-  const nav = navigator.language.slice(0, 2);
-  return nav === "zh" ? "zh" : "en";
+  for (const lang of navigator.languages ?? [navigator.language]) {
+    const code = lang.slice(0, 2);
+    if (code in MESSAGES) return code as Locale;
+  }
+  return "en";
 }
 
 type I18nContextValue = {
@@ -36,7 +39,12 @@ function interpolate(msg: string, params?: Record<string, string | number>): str
 }
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(detect);
+  const [locale, setLocaleState] = useState<Locale>(() => {
+    const l = detect();
+    document.documentElement.lang = l;
+    _currentLocale = l;
+    return l;
+  });
 
   const setLocale = useCallback((l: Locale) => {
     setLocaleState(l);

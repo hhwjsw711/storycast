@@ -74,7 +74,7 @@ export function VoiceField({ value, onChange, lang, topic, fallback }: Props) {
           className="flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-border bg-card px-3 text-xs font-medium transition-colors hover:border-border-strong"
         >
           <Library className="size-3.5" />
-          {t("voice.totalVoices", { total: total.toLocaleString("en") })}
+          {t("voice.totalVoices", { total: total.toLocaleString() })}
         </button>
       )}
       {total > 0 && <VoiceLibrary open={open} onOpenChange={setOpen} lang={lang} topic={topic} selected={value} onSelect={onChange} />}

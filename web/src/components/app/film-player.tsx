@@ -245,8 +245,8 @@ export function FilmPlayer({ src, cleanSrc, poster, autoPlay = false, className 
           >
             {flash.icon === "play" && <Play className="size-6 translate-x-0.5 fill-current" />}
             {flash.icon === "pause" && <Pause className="size-6 fill-current" />}
-            {flash.icon === "back" && <span className="text-sm font-medium">−5s</span>}
-            {flash.icon === "fwd" && <span className="text-sm font-medium">+5s</span>}
+            {flash.icon === "back" && <span className="text-sm font-medium">{t("player.back5s")}</span>}
+            {flash.icon === "fwd" && <span className="text-sm font-medium">{t("player.fwd5s")}</span>}
           </motion.div>
         )}
       </AnimatePresence>
@@ -344,7 +344,7 @@ export function FilmPlayer({ src, cleanSrc, poster, autoPlay = false, className 
                 <PictureInPicture2 className="size-4.5" />
               </CtrlButton>
             )}
-            <CtrlButton label={full ? "Exit full screen (f)" : t("player.fullscreen")} onClick={fullscreen}>
+            <CtrlButton label={full ? t("player.exitFullscreen") : t("player.fullscreen")} onClick={fullscreen}>
               {full ? <Minimize className="size-4.5" /> : <Maximize className="size-4.5" />}
             </CtrlButton>
           </div>

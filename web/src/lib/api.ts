@@ -3,6 +3,7 @@ import { upload } from "@/lib/studio/fal";
 import { newRecord, runFilm } from "@/lib/studio/pipeline";
 import { allRecords, loadRecord, saveRecord, type FilmRecord } from "@/lib/studio/store";
 import * as voices from "@/lib/studio/voices";
+import { getT } from "@/lib/i18n";
 
 export type Style = { id: string; label: string; thumb: string; category: string; blurb: string };
 export type Language = { code: string; name: string; native: string };
@@ -194,22 +195,22 @@ export const api = {
   },
   job: async (id: string) => {
     const d = await loadRecord(id);
-    if (!d) throw new Error("film not found");
+    if (!d) throw new Error(getT()("error.filmNotFound"));
     return d;
   },
 
   create: async (body: NewJob, onEvent: (e: JobEvent, rec: FilmRecord) => void) => {
     const d = await studioData();
-    if (!body.topic.trim()) throw new Error("topic is empty");
+    if (!body.topic.trim()) throw new Error(getT()("error.topicEmpty"));
     let style = body.style;
     if (body.character_id) {
       const c = d.characters.find((x) => x.id === body.character_id);
-      if (!c) throw new Error("unknown character");
+      if (!c) throw new Error(getT()("error.unknownCharacter"));
       style = c.style;
     }
     const known = d.styles.some((s) => s.id === style) || (style === "custom" && body.style_url);
     if (!known || !d.languages.some((l) => l.code === body.language) || body.minutes < 1 || body.minutes > d.max_minutes)
-      throw new Error("bad style / language / minutes");
+      throw new Error(getT()("error.badParams"));
     const v = body.voice;
     const rec = newRecord({
       topic: body.topic.trim(),
@@ -223,14 +224,14 @@ export const api = {
       voice: v?.voice_id ? { voice_id: v.voice_id, name: v.name, gender: v.gender, age: v.age, accent: v.accent, description: v.description } : {},
       resolution: body.resolution === "480P" ? "480P" : "768P",
     });
-    rec.events.push({ t: 0, stage: "queued", msg: "Queued" });
+    rec.events.push({ t: 0, stage: "queued", msg: getT()("event.queued") });
     await saveRecord(rec);
     return { rec, done: runFilm(rec, onEvent) };
   },
 
   resume: async (id: string, onEvent: (e: JobEvent, rec: FilmRecord) => void) => {
     const rec = await loadRecord(id);
-    if (!rec?.state?.plan) throw new Error("nothing to resume");
+    if (!rec?.state?.plan) throw new Error(getT()("error.nothingToResume"));
     rec.status = "queued";
     rec.error = "";
     return { rec, done: runFilm(rec, onEvent) };
@@ -242,8 +243,8 @@ export const api = {
   preview: (v: Voice, language: string) => voices.preview(v, language),
   upload: (file: File) => {
     const ext = (file.name.split(".").pop() || "").toLowerCase();
-    if (!["png", "jpg", "jpeg", "webp"].includes(ext)) return Promise.reject(new Error("png / jpg / webp only"));
-    if (file.size > 20 * 1024 * 1024) return Promise.reject(new Error("image is larger than 20 MB"));
+    if (!["png", "jpg", "jpeg", "webp"].includes(ext)) return Promise.reject(new Error(getT()("error.imageFormat")));
+    if (file.size > 20 * 1024 * 1024) return Promise.reject(new Error(getT()("error.imageTooLarge")));
     return upload(file);
   },
 };

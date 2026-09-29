@@ -4,6 +4,7 @@ import { translate } from "./director";
 import { run } from "./fal";
 import { cacheGet, cacheSet } from "./store";
 import { SHARE_API } from "@/lib/share";
+import { getT } from "@/lib/i18n";
 
 const TTS = "fal-ai/elevenlabs/tts/eleven-v3";
 export const PREVIEW_LINE = "Hi! I'm your narrator. Sit back, and let me tell you a story you won't forget.";
@@ -13,7 +14,7 @@ const EMPTY_FACETS: VoiceFacets = { total: 0, gender: [], age: [], accent: [], c
 
 async function voiceApi<T>(path: string, params: Record<string, string>, signal?: AbortSignal): Promise<T> {
   const r = await fetch(`${SHARE_API}${path}?${new URLSearchParams(params)}`, { signal });
-  if (!r.ok) throw new Error(`voices unavailable (${r.status})`);
+  if (!r.ok) throw new Error(getT()("error.voicesUnavailable", { status: r.status }));
   return r.json();
 }
 
@@ -75,7 +76,7 @@ export async function audition(voiceId: string, topic: string, lang: string) {
 
 export async function characterIntro(characterId: string, lang: string) {
   const c = (await studioData()).characters.find((x) => x.id === characterId);
-  if (!c) throw new Error("unknown character");
+  if (!c) throw new Error(getT()("error.unknownCharacter"));
   const text = await line(`Hi, I'm ${c.name}! ${c.personality}.`, lang);
   return sample(c.voice.voice_id, text, lang);
 }
