@@ -496,4 +496,8 @@ export const en: Record<string, string> = {
   "todo.agentList": "Agent task list",
   "todo.churning": "Churning",
   "todo.tasksCompleted": "{done} of {total} tasks completed",
+
+  // Language switcher
+  "lang.auto": "Follow system",
+  "lang.pick": "Choose language",
 };

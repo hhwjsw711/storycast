@@ -496,4 +496,8 @@ export const zh: Record<string, string> = {
   "todo.agentList": "Agent 任务列表",
   "todo.churning": "处理中",
   "todo.tasksCompleted": "已完成 {done}/{total} 项任务",
+
+  // Language switcher
+  "lang.auto": "跟随系统",
+  "lang.pick": "选择语言",
 };

@@ -1,23 +1,26 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { en } from "./locales/en";
 import { zh } from "./locales/zh";
+import { ja } from "./locales/ja";
+import { es } from "./locales/es";
 
-export type Locale = "en" | "zh";
+export type Locale = "en" | "zh" | "ja" | "es";
+export type LocaleChoice = Locale | "auto";
+
+export const AUTO = "auto";
 
 export const LOCALES: { code: Locale; label: string; native: string }[] = [
   { code: "en", label: "English", native: "English" },
   { code: "zh", label: "Chinese", native: "中文" },
+  { code: "ja", label: "Japanese", native: "日本語" },
+  { code: "es", label: "Spanish", native: "Español" },
 ];
 
-const MESSAGES: Record<Locale, Record<string, string>> = { en, zh };
+const MESSAGES: Record<Locale, Record<string, string>> = { en, zh, ja, es };
 
 const STORAGE_KEY = "memegineer-lang";
 
-function detect(): Locale {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY) as Locale | null;
-    if (saved && saved in MESSAGES) return saved;
-  } catch {}
+function browserLocale(): Locale {
   for (const lang of navigator.languages ?? [navigator.language]) {
     const code = lang.slice(0, 2);
     if (code in MESSAGES) return code as Locale;
@@ -25,9 +28,20 @@ function detect(): Locale {
   return "en";
 }
 
+function readChoice(): LocaleChoice {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY) as LocaleChoice | null;
+    if (saved && (saved === AUTO || saved in MESSAGES)) return saved;
+  } catch {}
+  return AUTO;
+}
+
+const resolve = (l: LocaleChoice): Locale => (l === AUTO ? browserLocale() : l);
+
 type I18nContextValue = {
   locale: Locale;
-  setLocale: (l: Locale) => void;
+  choice: LocaleChoice;
+  setLocale: (l: LocaleChoice) => void;
   t: (key: string, params?: Record<string, string | number>) => string;
 };
 
@@ -39,18 +53,23 @@ function interpolate(msg: string, params?: Record<string, string | number>): str
 }
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(() => {
-    const l = detect();
-    document.documentElement.lang = l;
-    _currentLocale = l;
+  const [choice, setChoiceState] = useState<LocaleChoice>(() => {
+    const l = readChoice();
+    const resolved = resolve(l);
+    document.documentElement.lang = resolved;
+    _choice = l;
+    _currentLocale = resolved;
     return l;
   });
+  const locale = useMemo<Locale>(() => resolve(choice), [choice]);
 
-  const setLocale = useCallback((l: Locale) => {
-    setLocaleState(l);
-    _currentLocale = l;
+  const setLocale = useCallback((l: LocaleChoice) => {
+    setChoiceState(l);
+    _choice = l;
+    const resolved = resolve(l);
+    _currentLocale = resolved;
     try { localStorage.setItem(STORAGE_KEY, l); } catch {}
-    document.documentElement.lang = l;
+    document.documentElement.lang = resolved;
   }, []);
 
   useEffect(() => { document.documentElement.lang = locale; }, [locale]);
@@ -64,7 +83,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     [locale],
   );
 
-  const value = useMemo(() => ({ locale, setLocale, t }), [locale, setLocale, t]);
+  const value = useMemo(() => ({ locale, choice, setLocale, t }), [locale, choice, setLocale, t]);
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
@@ -80,7 +99,8 @@ export function useT() {
 }
 
 // Global translation for non-React modules (pipeline.ts etc.)
-let _currentLocale: Locale = detect();
+let _choice: LocaleChoice = readChoice();
+let _currentLocale: Locale = resolve(_choice);
 
 export function getT() {
   return (key: string, params?: Record<string, string | number>) => {

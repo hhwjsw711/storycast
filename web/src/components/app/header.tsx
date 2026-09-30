@@ -1,7 +1,8 @@
 import { KeyRound, X } from "lucide-react";
 import { SharedLayoutBg } from "@/components/motion/shared-layout-bg";
 import { ThemeToggle } from "@/components/motion/theme-toggle";
-import { useI18n, useT, LOCALES } from "@/lib/i18n";
+import { LanguageSelect } from "@/components/app/language-select";
+import { useT } from "@/lib/i18n";
 import { Link, usePath } from "@/lib/router";
 import { cn } from "@/lib/utils";
 
@@ -33,21 +34,6 @@ function KeyButton({ hasKey, onKey, onDisconnect }: KeyProps) {
   );
 }
 
-function LangToggle() {
-  const { locale, setLocale } = useI18n();
-  const next = LOCALES[(LOCALES.findIndex((l) => l.code === locale) + 1) % LOCALES.length];
-  return (
-    <button
-      type="button"
-      onClick={() => setLocale(next.code)}
-      title={next.native}
-      className="ml-1 inline-flex size-10 shrink-0 items-center justify-center rounded-full border border-border text-xs font-medium text-muted-foreground transition-colors hover:text-foreground sm:ml-2"
-    >
-      {locale === "en" ? "EN" : "中"}
-    </button>
-  );
-}
-
 export function Header({ hasKey, onKey, onDisconnect }: KeyProps) {
   const path = usePath();
   const t = useT();
@@ -75,7 +61,7 @@ export function Header({ hasKey, onKey, onDisconnect }: KeyProps) {
             ))}
           </SharedLayoutBg>
           <KeyButton hasKey={hasKey} onKey={onKey} onDisconnect={onDisconnect} />
-          <LangToggle />
+          <LanguageSelect />
           <ThemeToggle
             variant="circle-blur"
             className="ml-1 size-10 shrink-0 rounded-full border border-border text-muted-foreground transition-colors hover:text-foreground sm:ml-2"

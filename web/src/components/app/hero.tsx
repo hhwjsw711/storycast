@@ -81,8 +81,8 @@ export function Hero({ cast, films }: { cast: CastMember[]; films: Film[] }) {
           </motion.div>
 
           <h1 className="mx-auto mt-6 max-w-3xl text-balance text-5xl font-medium tracking-tight md:text-6xl">
-            <TextReveal text={`${t("hero.typeTopic")} ${t("hero.aTopic")} ${t("hero.topic")}`} className="block" />
-            <TextReveal text={`${t("hero.get")} ${t("hero.a")} ${t("hero.story")}`} className="block text-muted-foreground" delay={0.25} />
+            <TextReveal text={[t("hero.typeTopic"), t("hero.aTopic"), t("hero.topic")].filter(Boolean).join(" ")} className="block" />
+            <TextReveal text={[t("hero.get"), t("hero.a"), t("hero.story")].filter(Boolean).join(" ")} className="block text-muted-foreground" delay={0.25} />
           </h1>
 
           <motion.p
