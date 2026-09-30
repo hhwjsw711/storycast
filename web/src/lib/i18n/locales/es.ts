@@ -324,7 +324,7 @@ export const es: Record<string, string> = {
   "event.resuming": "Reanudando «{title} {subtitle}»",
   "event.designing": "Diseñando a {name} (GPT Image 2.5)…",
   "event.voiceFallback": "Voz no disponible en fal, cambiando a {name}",
-  "event.refilmed": "Toma {shot} vuelta a rodar",
+  "event.refilmed": "Toma {shot} rodada de nuevo",
 
   // Film player
   "player.play": "Reproducir",

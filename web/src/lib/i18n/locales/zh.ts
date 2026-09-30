@@ -184,7 +184,7 @@ export const zh: Record<string, string> = {
   "watch.scenes": "场景数",
   "watch.onCameraStat": "出镜",
   "watch.voiceOver": "画外音",
-  "watch.madeIn": "制作于",
+  "watch.madeIn": "制作耗时",
   "watch.credits": "演职人员",
   "watch.moreFrom": "{name} 的更多作品",
   "watch.keepWatching": "继续观看",
